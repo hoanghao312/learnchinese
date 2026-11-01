@@ -1,0 +1,10 @@
+{
+  "name": "Interactive Chinese Reader",
+  "description": "An interactive Chinese learning app that segments Chinese paragraphs into clickable words with Pinyin, sound, and Vietnamese meanings.",
+  "requestFramePermissions": [
+    "microphone"
+  ],
+  "majorCapabilities": [
+    "MAJOR_CAPABILITY_SERVER_SIDE_GEMINI_API"
+  ]
+}

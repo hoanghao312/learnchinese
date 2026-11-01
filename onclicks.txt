@@ -1,0 +1,265 @@
+src/components/TextReader.tsx:404:                onClick={handlePlaySelection}
+src/components/TextReader.tsx:413:                onClick={handleToggleRecordSelection}
+src/components/TextReader.tsx:422:                onClick={() => setIsSelectionLooping(!isSelectionLooping)}
+src/components/TextReader.tsx:431:                onClick={handleTranslateSelection}
+src/components/TextReader.tsx:439:                onClick={handleAnalyzeGrammar}
+src/components/TextReader.tsx:498:                      onClick={togglePlayRecord}
+src/components/TextReader.tsx:563:              onClick={() => {
+src/components/ConfirmModal.tsx:35:                  onClick={onCancel}
+src/components/ConfirmModal.tsx:41:                  onClick={onConfirm}
+src/components/SavedWordsList.tsx:498:              onClick={() => setShowAdvancedFilters(!showAdvancedFilters)}
+src/components/SavedWordsList.tsx:506:              onClick={() => setShowFolderModal(true)}
+src/components/SavedWordsList.tsx:517:                onClick={() => setDisplayMode('zh-vi')}
+src/components/SavedWordsList.tsx:528:                onClick={() => setDisplayMode('vi-zh')}
+src/components/SavedWordsList.tsx:549:                  onClick={() => setShowAdvancedFilters(false)}
+src/components/SavedWordsList.tsx:561:                      onClick={() => setShowAdvancedFilters(false)}
+src/components/SavedWordsList.tsx:577:                            onClick={() => {
+src/components/SavedWordsList.tsx:595:                          onClick={() => setSortBy(sortBy === 'date_desc' ? 'default' : 'date_desc')}
+src/components/SavedWordsList.tsx:601:                          onClick={() => setSortBy(sortBy === 'date_asc' ? 'default' : 'date_asc')}
+src/components/SavedWordsList.tsx:621:                            onClick={() => {
+src/components/SavedWordsList.tsx:641:                          onClick={() => setSortBy(sortBy === 'score_desc' ? 'default' : 'score_desc')}
+src/components/SavedWordsList.tsx:647:                          onClick={() => setSortBy(sortBy === 'score_asc' ? 'default' : 'score_asc')}
+src/components/SavedWordsList.tsx:659:                      onClick={() => {
+src/components/SavedWordsList.tsx:669:                      onClick={() => setShowAdvancedFilters(false)}
+src/components/SavedWordsList.tsx:682:              onClick={() => setFlashcardMode(displayMode)}
+src/components/SavedWordsList.tsx:697:              onClick={() => fileInputRef.current?.click()}
+src/components/SavedWordsList.tsx:711:              onClick={() => {
+src/components/SavedWordsList.tsx:744:              onClick={handleRemoveDuplicates}
+src/components/SavedWordsList.tsx:753:              onClick={() => setShowAddForm(!showAddForm)}
+src/components/SavedWordsList.tsx:767:            onClick={() => setActiveFilter(activeFilter === 'learning' ? null : 'learning')}
+src/components/SavedWordsList.tsx:777:            onClick={() => setActiveFilter(activeFilter === 'known' ? null : 'known')}
+src/components/SavedWordsList.tsx:864:                onClick={() => setActiveFolderId(null)}
+src/components/SavedWordsList.tsx:872:                onClick={() => setActiveFolderId('all')}
+src/components/SavedWordsList.tsx:889:                onClick={() => setActiveFolderId('uncategorized')}
+src/components/SavedWordsList.tsx:931:                            <button onClick={() => { if(editingFolderName.trim()) { onUpdateFolder(f.id, editingFolderName.trim()); setEditingFolderId(null); } }} className="p-2 sm:p-1.5 min-w-[36px] min-h-[36px] bg-amber-500 flex items-center justify-center hover:bg-amber-600 text-white rounded-lg transition-colors">
+src/components/SavedWordsList.tsx:934:                            <button onClick={() => setEditingFolderId(null)} className="p-2 sm:p-1.5 min-w-[36px] min-h-[36px] bg-slate-200 flex items-center justify-center hover:bg-slate-300 dark:bg-slate-700 dark:hover:bg-slate-600 text-slate-600 dark:text-slate-300 rounded-lg transition-colors">
+src/components/SavedWordsList.tsx:941:                              onClick={() => setActiveFolderId(f.id)}
+src/components/SavedWordsList.tsx:976:                          <button onClick={() => { if(subfolderName.trim()) { onCreateFolder(subfolderName.trim(), f.id); setAddingSubfolderTo(null); } }} className="p-1.5 bg-blue-500 hover:bg-blue-600 text-white rounded-lg transition-colors">
+src/components/SavedWordsList.tsx:979:                          <button onClick={() => setAddingSubfolderTo(null)} className="p-2 sm:p-1.5 min-w-[36px] min-h-[36px] bg-slate-200 flex items-center justify-center hover:bg-slate-300 dark:bg-slate-700 dark:hover:bg-slate-600 text-slate-600 dark:text-slate-300 rounded-lg transition-colors">
+src/components/SavedWordsList.tsx:1016:                      onClick={() => setActiveFolderId('all')}
+src/components/SavedWordsList.tsx:1038:                      onClick={() => setActiveFolderId('uncategorized')}
+src/components/SavedWordsList.tsx:1077:                          onClick={() => setActiveFolderId(f.id)}
+src/components/SavedWordsList.tsx:1089:                              <div className="flex w-full gap-1 items-center" onClick={(e) => e.stopPropagation()}>
+src/components/SavedWordsList.tsx:1104:                                <button onClick={() => { if(editingFolderName.trim()) { onUpdateFolder(f.id, editingFolderName.trim()); setEditingFolderId(null); } }} className="p-1 bg-amber-500 hover:bg-amber-600 text-white rounded-md transition-colors">
+src/components/SavedWordsList.tsx:1107:                                <button onClick={() => setEditingFolderId(null)} className="p-1 bg-slate-200 hover:bg-slate-300 dark:bg-slate-700 dark:hover:bg-slate-600 text-slate-600 dark:text-slate-300 rounded-md transition-colors">
+src/components/SavedWordsList.tsx:1137:                              <button onClick={() => { if(subfolderName.trim()) { onCreateFolder(subfolderName.trim(), f.id); setAddingSubfolderTo(null); } }} className="p-1.5 bg-blue-500 hover:bg-blue-600 text-white rounded-lg transition-colors">
+src/components/SavedWordsList.tsx:1140:                              <button onClick={() => setAddingSubfolderTo(null)} className="p-2 sm:p-1.5 min-w-[36px] min-h-[36px] bg-slate-200 flex items-center justify-center hover:bg-slate-300 dark:bg-slate-700 dark:hover:bg-slate-600 text-slate-600 dark:text-slate-300 rounded-lg transition-colors">
+src/components/SavedWordsList.tsx:1245:                        onClick={() => setEditingWordId(null)}
+src/components/SavedWordsList.tsx:1299:                        onClick={() => setEditingWordId(null)}
+src/components/SavedWordsList.tsx:1305:                        onClick={() => {
+src/components/SavedWordsList.tsx:1368:                  onClick={(e) => {
+src/components/SavedWordsList.tsx:1392:                      onClick={(e) => e.stopPropagation()}
+src/components/SavedWordsList.tsx:1483:                      onClick={(e) => {
+src/components/SavedWordsList.tsx:1494:                      onClick={(e) => {
+src/components/SavedWordsList.tsx:1528:                  onClick={() => setCurrentPage(p => Math.max(1, p - 1))}
+src/components/SavedWordsList.tsx:1538:                  onClick={() => setCurrentPage(p => Math.min(Math.ceil(sortedWords.length / ITEMS_PER_PAGE), p + 1))}
+src/components/SavedWordsList.tsx:1568:            onClick={(e) => e.stopPropagation()}
+src/components/SavedWordsList.tsx:1572:              onClick={(e) => {
+src/components/SavedWordsList.tsx:1583:              onClick={(e) => {
+src/components/SavedWordsList.tsx:1599:                  onClick={(e) => {
+src/components/SavedWordsList.tsx:1610:                  onClick={(e) => {
+src/components/SavedWordsList.tsx:1622:                  onClick={(e) => {
+src/components/SavedWordsList.tsx:1652:            onClick={(e) => e.stopPropagation()}
+src/components/SavedWordsList.tsx:1668:                        onClick={(e) => {
+src/components/SavedWordsList.tsx:1688:                        onClick={(e) => {
+src/components/SavedWordsList.tsx:1710:                        onClick={(e) => {
+src/components/SavedWordsList.tsx:1724:                      onClick={(e) => {
+src/components/SavedWordsList.tsx:1737:                      onClick={(e) => {
+src/components/SavedWordsList.tsx:1753:                  onClick={(e) => {
+src/components/SavedWordsList.tsx:1768:                    onClick={(e) => {
+src/components/SavedWordsList.tsx:1783:                    onClick={(e) => {
+src/components/SavedWordsList.tsx:1801:                         onClick={(e) => {
+src/components/SavedWordsList.tsx:1815:                           onClick={(e) => {
+src/components/SavedWordsList.tsx:1864:                  onClick={() => {
+src/components/SavedWordsList.tsx:1873:                  onClick={() => {
+src/components/SavedWordsList.tsx:1908:                  onClick={() => setFolderToDelete(null)}
+src/components/SavedWordsList.tsx:1914:                  onClick={() => {
+src/components/GoogleDrivePickerModal.tsx:181:              <button onClick={navigateBack} className="p-1.5 text-slate-500 hover:bg-slate-100 rounded-full transition-colors">
+src/components/GoogleDrivePickerModal.tsx:187:          <button onClick={onClose} className="p-2 text-slate-400 hover:text-slate-600 hover:bg-slate-100 rounded-full transition-colors">
+src/components/GoogleDrivePickerModal.tsx:200:                    onClick={() => navigateToBreadcrumb(idx)}
+src/components/GoogleDrivePickerModal.tsx:233:                onClick={() => {
+src/components/GoogleDrivePickerModal.tsx:256:                  onClick={() => handleFileClick(file)}
+src/components/AudioRecorder.tsx:219:              onClick={playAiVoice}
+src/components/AudioRecorder.tsx:234:            onClick={toggleRecording}
+src/components/AudioRecorder.tsx:285:                    onClick={() => togglePlayback(rec)}
+src/components/AudioRecorder.tsx:296:                    onClick={() => downloadRecording(rec)}
+src/components/AudioRecorder.tsx:303:                    onClick={() => deleteRecording(rec.id)}
+src/components/NotebookChat.tsx:374:                <button onClick={() => setShowStoryModal(false)} className="p-1 text-slate-400 hover:text-slate-600 dark:hover:text-slate-200 rounded-full hover:bg-slate-100 dark:hover:bg-slate-700 transition-colors">
+src/components/NotebookChat.tsx:388:                        onClick={() => setStoryCount(count)}
+src/components/NotebookChat.tsx:405:                        onClick={() => setStoryLength(len)}
+src/components/NotebookChat.tsx:416:                    onClick={() => setStoryFilterType('vocab')}
+src/components/NotebookChat.tsx:422:                    onClick={() => {
+src/components/NotebookChat.tsx:491:                  onClick={() => setShowStoryModal(false)}
+src/components/NotebookChat.tsx:497:                  onClick={() => {
+src/components/NotebookChat.tsx:579:                <button onClick={() => setIsSidebarOpen(false)} className="p-1.5 hover:bg-slate-100 dark:hover:bg-slate-700 rounded-lg text-slate-500 transition-colors">
+src/components/NotebookChat.tsx:587:                      onClick={createNewSession}
+src/components/NotebookChat.tsx:599:                        onClick={() => switchSession(session.id)}
+src/components/NotebookChat.tsx:616:                              onClick={(e) => e.stopPropagation()}
+src/components/NotebookChat.tsx:626:                              onClick={(e) => {
+src/components/NotebookChat.tsx:637:                              onClick={(e) => deleteSession(e, session.id)}
+src/components/NotebookChat.tsx:664:              <button onClick={() => setIsSidebarOpen(true)} className="p-1.5 hover:bg-slate-100 dark:hover:bg-slate-700 rounded-lg text-slate-500 transition-colors">
+src/components/NotebookChat.tsx:673:              onClick={() => setSessionToDelete(currentSessionId)}
+src/components/NotebookChat.tsx:680:              <button onClick={onClose} className="p-1.5 hover:bg-slate-100 dark:hover:bg-slate-700 rounded-full text-slate-500 transition-colors">
+src/components/NotebookChat.tsx:715:                        onClick={() => handleEditPrompt(msg)}
+src/components/NotebookChat.tsx:757:              onClick={() => setShowStoryModal(true)}
+src/components/NotebookChat.tsx:805:                  onClick={() => {
+src/components/NotebookChat.tsx:855:                    onClick={() => setSessionToDelete(null)}
+src/components/NotebookChat.tsx:861:                    onClick={() => confirmDeleteSession(sessionToDelete)}
+src/components/NotebookChat.tsx:876:            onClick={() => setContextMenu(null)} 
+src/components/NotebookChat.tsx:888:              onClick={() => {
+src/components/NotebookChat.tsx:898:              onClick={() => {
+src/components/NotebookChat.tsx:909:              onClick={() => {
+src/components/WordPopup.tsx:292:                  onClick={() => setIsEditing(false)}
+src/components/WordPopup.tsx:384:                  onClick={() => handleSpeakWord(1.0)}
+src/components/WordPopup.tsx:392:                  onClick={handleToggleRecord}
+src/components/WordPopup.tsx:403:                  onClick={() => onToggleSave(token)}
+src/components/WordPopup.tsx:414:                    onClick={() => onMarkKnown(token)}
+src/components/WordPopup.tsx:437:                          onClick={togglePlayRecord}
+src/components/AssistantChat.tsx:195:            onClick={() => setShowClearConfirm(true)}
+src/components/AssistantChat.tsx:203:              onClick={onClose}
+src/components/AssistantChat.tsx:336:            onClick={() => setContextMenu(null)} 
+src/components/AssistantChat.tsx:348:              onClick={() => {
+src/components/AssistantChat.tsx:358:              onClick={() => {
+src/components/AssistantChat.tsx:369:              onClick={() => {
+src/components/AssistantChat.tsx:400:                    onClick={() => setShowClearConfirm(false)}
+src/components/AssistantChat.tsx:406:                    onClick={() => {
+src/components/DictUploader.tsx:308:        onClick={() => !isProcessing && fileInputRef.current?.click()}
+src/components/DictUploader.tsx:340:          onClick={handleGoogleDriveClick}
+src/components/DictUploader.tsx:377:                           onClick={() => exportFile(f)}
+src/components/DictUploader.tsx:385:                        onClick={() => handleDeleteFile(f.id, f.keys)}
+src/components/PracticeDocUploader.tsx:292:        onClick={() => !isProcessing && fileInputRef.current?.click()}
+src/components/PracticeDocUploader.tsx:324:          onClick={handleGoogleDriveClick}
+src/components/PracticeDocUploader.tsx:361:                           onClick={() => exportFile(f)}
+src/components/PracticeDocUploader.tsx:369:                        onClick={() => handleDeleteFile(f.id, f.keys)}
+src/components/Flashcards.tsx:190:            onClick={() => {
+src/components/Flashcards.tsx:213:                onClick={() => setIncludeSubfolders(prev => !prev)}
+src/components/Flashcards.tsx:223:              onClick={() => {
+src/components/Flashcards.tsx:244:            onClick={() => setIsExpanded(!isExpanded)} 
+src/components/Flashcards.tsx:250:          <button onClick={onClose} className="p-2 text-slate-400 hover:text-slate-600 dark:hover:text-slate-200 transition-colors bg-slate-100 dark:bg-slate-800 rounded-full hover:bg-slate-200 dark:hover:bg-slate-700">
+src/components/Flashcards.tsx:280:              onClick={() => {
+src/components/Flashcards.tsx:302:              onClick={() => {
+src/components/Flashcards.tsx:330:              onClick={() => {
+src/components/Flashcards.tsx:343:                onClick={handleSpeak}
+src/components/Flashcards.tsx:396:                        onClick={(e) => e.stopPropagation()}
+src/components/Flashcards.tsx:449:                  onClick={(e) => {
+src/components/Flashcards.tsx:471:               <button onClick={() => handleGrade(1)} className="w-full py-2 md:py-2.5 bg-white dark:bg-slate-800 text-red-500 rounded-full shadow-sm border border-slate-200 dark:border-slate-700 hover:bg-slate-50 dark:hover:bg-slate-700 transition-colors text-sm md:text-base font-medium">
+src/components/Flashcards.tsx:477:               <button onClick={() => handleGrade(2)} className="w-full py-2 md:py-2.5 bg-white dark:bg-slate-800 text-orange-500 rounded-full shadow-sm border border-slate-200 dark:border-slate-700 hover:bg-slate-50 dark:hover:bg-slate-700 transition-colors text-sm md:text-base font-medium">
+src/components/Flashcards.tsx:483:               <button onClick={() => handleGrade(3)} className="w-full py-2 md:py-2.5 bg-white dark:bg-slate-800 text-teal-600 dark:text-teal-400 rounded-full shadow-sm border border-slate-200 dark:border-slate-700 hover:bg-slate-50 dark:hover:bg-slate-700 transition-colors text-sm md:text-base font-medium">
+src/components/Flashcards.tsx:489:               <button onClick={() => handleGrade(4)} className="w-full py-2 md:py-2.5 bg-white dark:bg-slate-800 text-blue-600 rounded-full shadow-sm border border-slate-200 dark:border-slate-700 hover:bg-slate-50 dark:hover:bg-slate-700 transition-colors text-sm md:text-base font-medium">
+src/components/CustomFolderSelect.tsx:50:            onClick={() => {
+src/components/CustomFolderSelect.tsx:55:            <div className="w-5 flex items-center justify-center shrink-0" onClick={(e) => hasChildren ? toggleExpand(e, child.id) : undefined}>
+src/components/CustomFolderSelect.tsx:79:        onClick={() => setIsOpen(!isOpen)}
+src/components/CustomFolderSelect.tsx:92:            onClick={() => {
+src/components/SavedWordsList.tsx.bak:374:              onClick={() => setShowFolderModal(true)}
+src/components/SavedWordsList.tsx.bak:385:                onClick={() => setDisplayMode('zh-vi')}
+src/components/SavedWordsList.tsx.bak:396:                onClick={() => setDisplayMode('vi-zh')}
+src/components/SavedWordsList.tsx.bak:410:              onClick={() => setFlashcardMode(displayMode)}
+src/components/SavedWordsList.tsx.bak:425:              onClick={() => fileInputRef.current?.click()}
+src/components/SavedWordsList.tsx.bak:439:              onClick={() => {
+src/components/SavedWordsList.tsx.bak:471:              onClick={() => setShowAddForm(!showAddForm)}
+src/components/SavedWordsList.tsx.bak:485:            onClick={() => setActiveFilter(activeFilter === 'learning' ? null : 'learning')}
+src/components/SavedWordsList.tsx.bak:497:            onClick={() => setActiveFilter(activeFilter === 'known' ? null : 'known')}
+src/components/SavedWordsList.tsx.bak:584:                onClick={() => setActiveFolderId(null)}
+src/components/SavedWordsList.tsx.bak:591:                onClick={() => setActiveFolderId('all')}
+src/components/SavedWordsList.tsx.bak:603:                onClick={() => setActiveFolderId('uncategorized')}
+src/components/SavedWordsList.tsx.bak:641:                            <button onClick={() => { if(editingFolderName.trim()) { onUpdateFolder(f.id, editingFolderName.trim()); setEditingFolderId(null); } }} className="p-2 sm:p-1.5 min-w-[36px] min-h-[36px] bg-amber-500 flex items-center justify-center hover:bg-amber-600 text-white rounded-lg transition-colors">
+src/components/SavedWordsList.tsx.bak:644:                            <button onClick={() => setEditingFolderId(null)} className="p-2 sm:p-1.5 min-w-[36px] min-h-[36px] bg-slate-200 flex items-center justify-center hover:bg-slate-300 dark:bg-slate-700 dark:hover:bg-slate-600 text-slate-600 dark:text-slate-300 rounded-lg transition-colors">
+src/components/SavedWordsList.tsx.bak:651:                              onClick={() => setActiveFolderId(f.id)}
+src/components/SavedWordsList.tsx.bak:661:                                    onClick={(e) => {
+src/components/SavedWordsList.tsx.bak:685:                                onClick={(e) => { 
+src/components/SavedWordsList.tsx.bak:696:                                onClick={(e) => { 
+src/components/SavedWordsList.tsx.bak:712:                                onClick={(e) => { e.stopPropagation(); setEditingFolderId(f.id); setEditingFolderName(f.name); }}
+src/components/SavedWordsList.tsx.bak:719:                                onClick={(e) => {
+src/components/SavedWordsList.tsx.bak:751:                          <button onClick={() => { if(subfolderName.trim()) { onCreateFolder(subfolderName.trim(), f.id); setAddingSubfolderTo(null); } }} className="p-1.5 bg-blue-500 hover:bg-blue-600 text-white rounded-lg transition-colors">
+src/components/SavedWordsList.tsx.bak:754:                          <button onClick={() => setAddingSubfolderTo(null)} className="p-2 sm:p-1.5 min-w-[36px] min-h-[36px] bg-slate-200 flex items-center justify-center hover:bg-slate-300 dark:bg-slate-700 dark:hover:bg-slate-600 text-slate-600 dark:text-slate-300 rounded-lg transition-colors">
+src/components/SavedWordsList.tsx.bak:784:                  onClick={() => {
+src/components/SavedWordsList.tsx.bak:795:                  onClick={() => {
+src/components/SavedWordsList.tsx.bak:808:                    onClick={() => {
+src/components/SavedWordsList.tsx.bak:819:                      onClick={() => {
+src/components/SavedWordsList.tsx.bak:849:                      onClick={() => setActiveFolderId('all')}
+src/components/SavedWordsList.tsx.bak:868:                      onClick={() => setActiveFolderId('uncategorized')}
+src/components/SavedWordsList.tsx.bak:906:                          onClick={() => setActiveFolderId(f.id)}
+src/components/SavedWordsList.tsx.bak:914:                                   onClick={(e) => {
+src/components/SavedWordsList.tsx.bak:935:                              <div className="flex w-full gap-1 items-center" onClick={(e) => e.stopPropagation()}>
+src/components/SavedWordsList.tsx.bak:950:                                <button onClick={() => { if(editingFolderName.trim()) { onUpdateFolder(f.id, editingFolderName.trim()); setEditingFolderId(null); } }} className="p-1 bg-amber-500 hover:bg-amber-600 text-white rounded-md transition-colors">
+src/components/SavedWordsList.tsx.bak:953:                                <button onClick={() => setEditingFolderId(null)} className="p-1 bg-slate-200 hover:bg-slate-300 dark:bg-slate-700 dark:hover:bg-slate-600 text-slate-600 dark:text-slate-300 rounded-md transition-colors">
+src/components/SavedWordsList.tsx.bak:966:                                onClick={(e) => {
+src/components/SavedWordsList.tsx.bak:977:                                onClick={(e) => {
+src/components/SavedWordsList.tsx.bak:988:                                onClick={(e) => {
+src/components/SavedWordsList.tsx.bak:999:                                onClick={(e) => {
+src/components/SavedWordsList.tsx.bak:1029:                              <button onClick={() => { if(subfolderName.trim()) { onCreateFolder(subfolderName.trim(), f.id); setAddingSubfolderTo(null); } }} className="p-1.5 bg-blue-500 hover:bg-blue-600 text-white rounded-lg transition-colors">
+src/components/SavedWordsList.tsx.bak:1032:                              <button onClick={() => setAddingSubfolderTo(null)} className="p-2 sm:p-1.5 min-w-[36px] min-h-[36px] bg-slate-200 flex items-center justify-center hover:bg-slate-300 dark:bg-slate-700 dark:hover:bg-slate-600 text-slate-600 dark:text-slate-300 rounded-lg transition-colors">
+src/components/SavedWordsList.tsx.bak:1128:                        onClick={() => setEditingWordId(null)}
+src/components/SavedWordsList.tsx.bak:1182:                        onClick={() => setEditingWordId(null)}
+src/components/SavedWordsList.tsx.bak:1188:                        onClick={() => {
+src/components/SavedWordsList.tsx.bak:1218:                  onClick={(e) => {
+src/components/SavedWordsList.tsx.bak:1247:                      onClick={(e) => e.stopPropagation()}
+src/components/SavedWordsList.tsx.bak:1327:                      onClick={(e) => {
+src/components/SavedWordsList.tsx.bak:1364:                  onClick={() => setCurrentPage(p => Math.max(1, p - 1))}
+src/components/SavedWordsList.tsx.bak:1374:                  onClick={() => setCurrentPage(p => Math.min(Math.ceil(filteredWords.length / ITEMS_PER_PAGE), p + 1))}
+src/components/SavedWordsList.tsx.bak:1402:            onClick={(e) => e.stopPropagation()}
+src/components/SavedWordsList.tsx.bak:1409:                  onClick={(e) => {
+src/components/SavedWordsList.tsx.bak:1427:                    onClick={(e) => {
+src/components/SavedWordsList.tsx.bak:1441:                  onClick={(e) => {
+src/components/SavedWordsList.tsx.bak:1454:                  onClick={(e) => {
+src/components/SavedWordsList.tsx.bak:1467:                  onClick={(e) => {
+src/components/SavedWordsList.tsx.bak:1482:                    onClick={(e) => {
+src/components/SavedWordsList.tsx.bak:1497:                    onClick={(e) => {
+src/components/SavedWordsList.tsx.bak:1515:                         onClick={(e) => {
+src/components/SavedWordsList.tsx.bak:1529:                           onClick={(e) => {
+src/components/SavedWordsList.tsx.bak:1578:                  onClick={() => {
+src/components/SavedWordsList.tsx.bak:1587:                  onClick={() => {
+src/components/SavedWordsList.tsx.bak:1622:                  onClick={() => setFolderToDelete(null)}
+src/components/SavedWordsList.tsx.bak:1628:                  onClick={() => {
+src/components/FileUploader.tsx:85:            onClick={() => fileInputRef.current?.click()}
+src/components/Practice.tsx:215:            onClick={onBack}
+src/components/Practice.tsx:237:                    onClick={() => generatePractice('ordering', false, true)}
+src/components/Practice.tsx:252:                    <button onClick={() => setShowPinyin(!showPinyin)} className="text-slate-400 hover:text-slate-600 transition-colors" title={showPinyin ? "Ẩn Pinyin" : "Hiện Pinyin"}>
+src/components/Practice.tsx:306:                              <button onClick={() => handleChangeExercise(i, ex, 'ordering')} disabled={changingIndex === i} className="transition-colors p-1 text-slate-400 hover:text-amber-500 disabled:opacity-50" title="Đổi câu khác">
+src/components/Practice.tsx:309:                              <button onClick={() => handleSaveExercise(ex, 'ordering')} className={`transition-colors p-1 ${isSaved ? 'text-blue-500' : 'text-slate-400 hover:text-blue-500'}`} title={isSaved ? "Bỏ lưu bài tập này" : "Lưu bài tập này"}>
+src/components/Practice.tsx:382:                              onClick={() => {
+src/components/Practice.tsx:421:                      onClick={() => {
+src/components/Practice.tsx:441:                        onClick={() => {
+src/components/Practice.tsx:451:                        onClick={() => {
+src/components/Practice.tsx:471:                        onClick={() => generatePractice('ordering', false, true)}
+src/App.tsx:1325:                onClick={() => setInputSourceTab("paste")}
+src/App.tsx:1338:                onClick={() => setInputSourceTab("file")}
+src/App.tsx:1351:                onClick={() => setInputSourceTab("dict")}
+src/App.tsx:1364:                onClick={() => setInputSourceTab("practice_docs")}
+src/App.tsx:1377:                onClick={() => setInputSourceTab("missing_words")}
+src/App.tsx:1595:                               onClick={() => exportData(missingMeaning, "tu-chua-co-nghia.xlsx", "Chưa có nghĩa")}
+src/App.tsx:1605:                               onClick={() => exportData(missingDict, "chua-co-trong-tu-dien.xlsx", "Thiếu từ điển")}
+src/App.tsx:1640:                                            <button onClick={() => setSelectedMissingWords(prev => [...new Set([...prev, ...missingMeaning.map(w => w.text)])])} className="text-[11px] text-rose-600 hover:text-rose-700 font-medium hover:underline">
+src/App.tsx:1645:                                            <button onClick={() => setSelectedMissingWords(prev => prev.filter(w => !missingMeaning.some(m => m.text === w)))} className="text-[11px] text-slate-500 hover:text-slate-700 font-medium hover:underline">
+src/App.tsx:1652:                                             <button onClick={() => handleMergeAndLookup(selectedMissingWords.filter(w => missingMeaning.some(m => m.text === w)))} disabled={isLookingUpMerged} className="text-[11px] px-3 py-1.5 bg-blue-600 text-white rounded font-medium hover:bg-blue-700 disabled:opacity-50 flex items-center gap-1 shadow-sm">
+src/App.tsx:1656:                                             <button onClick={() => handleBulkDeleteMissing(selectedMissingWords.filter(w => missingMeaning.some(m => m.text === w)))} className="text-[11px] px-2.5 py-1.5 bg-rose-100 text-rose-700 rounded font-medium hover:bg-rose-200">
+src/App.tsx:1659:                                             <button onClick={() => setSelectedMissingWords(prev => prev.filter(w => !missingMeaning.some(m => m.text === w)))} className="text-[11px] px-2.5 py-1.5 bg-slate-200 text-slate-600 rounded font-medium hover:bg-slate-300">
+src/App.tsx:1670:                                              <button onClick={(e) => { e.stopPropagation(); toggleMissingWordSelection(w.text); }} className={`px-2.5 py-2 border-r transition-colors flex items-center justify-center ${isSelected ? 'border-rose-300 bg-rose-200 rounded-l-lg' : 'border-rose-200/50 hover:bg-rose-100 rounded-l-lg'}`} title="Chọn từ này">
+src/App.tsx:1673:                                              <button onClick={() => handleSelectSavedWordPreview(w)} className={`px-3 py-1.5 text-sm font-medium cursor-pointer transition-colors ${isSelected ? 'text-rose-900 bg-rose-100 hover:bg-rose-200' : 'text-rose-700 hover:bg-rose-100'}`}>
+src/App.tsx:1676:                                              <button onClick={(e) => { e.stopPropagation(); setConfirmAction({ title: "Xác nhận xóa", message: `Bạn có chắc chắn muốn xóa từ "${w.text}" khỏi danh sách?`, onConfirm: () => { setHistoricalMissingWords(prev => { const next = prev.filter(t => t.text !== w.text); localStorage.setItem("historical_missing_words", JSON.stringify(next)); return next; }); } }); }} className="p-1.5 text-rose-400 hover:text-rose-700 hover:bg-rose-100 rounded-r-lg transition-colors border-l border-rose-200/50" title="Xóa khỏi danh sách">
+src/App.tsx:1691:                                            <button onClick={() => setSelectedMissingWords(prev => [...new Set([...prev, ...missingDict.map(w => w.text)])])} className="text-[11px] text-orange-600 hover:text-orange-700 font-medium hover:underline">
+src/App.tsx:1696:                                            <button onClick={() => setSelectedMissingWords(prev => prev.filter(w => !missingDict.some(m => m.text === w)))} className="text-[11px] text-slate-500 hover:text-slate-700 font-medium hover:underline">
+src/App.tsx:1703:                                             <button onClick={() => handleMergeAndLookup(selectedMissingWords.filter(w => missingDict.some(m => m.text === w)))} disabled={isLookingUpMerged} className="text-[11px] px-3 py-1.5 bg-blue-600 text-white rounded font-medium hover:bg-blue-700 disabled:opacity-50 flex items-center gap-1 shadow-sm">
+src/App.tsx:1707:                                             <button onClick={() => handleBulkDeleteMissing(selectedMissingWords.filter(w => missingDict.some(m => m.text === w)))} className="text-[11px] px-2.5 py-1.5 bg-rose-100 text-rose-700 rounded font-medium hover:bg-rose-200">
+src/App.tsx:1710:                                             <button onClick={() => setSelectedMissingWords(prev => prev.filter(w => !missingDict.some(m => m.text === w)))} className="text-[11px] px-2.5 py-1.5 bg-slate-200 text-slate-600 rounded font-medium hover:bg-slate-300">
+src/App.tsx:1721:                                              <button onClick={(e) => { e.stopPropagation(); toggleMissingWordSelection(w.text); }} className={`px-2.5 py-2 border-r transition-colors flex items-center justify-center ${isSelected ? 'border-orange-300 bg-orange-200 rounded-l-lg' : 'border-orange-200/50 hover:bg-orange-100 rounded-l-lg'}`} title="Chọn từ này">
+src/App.tsx:1724:                                              <button onClick={() => handleSelectSavedWordPreview(w)} className={`px-3 py-1.5 text-sm font-medium cursor-pointer transition-colors ${isSelected ? 'text-orange-900 bg-orange-100 hover:bg-orange-200' : 'text-orange-700 hover:bg-orange-100'}`}>
+src/App.tsx:1727:                                              <button onClick={(e) => { e.stopPropagation(); setConfirmAction({ title: "Xác nhận xóa", message: `Bạn có chắc chắn muốn xóa từ "${w.text}" khỏi danh sách?`, onConfirm: () => { setHistoricalMissingWords(prev => { const next = prev.filter(t => t.text !== w.text); localStorage.setItem("historical_missing_words", JSON.stringify(next)); return next; }); } }); }} className="p-1.5 text-orange-400 hover:text-orange-700 hover:bg-orange-100 rounded-r-lg transition-colors border-l border-orange-200/50" title="Xóa khỏi danh sách">
+src/App.tsx:1800:                  onClick={() => {
+src/App.tsx:1816:                  onClick={() => setIsFullscreen(!isFullscreen)}
+src/App.tsx:1827:                    onClick={handleSpeakFullParagraph}
+src/App.tsx:1844:                    onClick={() => setIsLoopingParagraph(!isLoopingParagraph)}
+src/App.tsx:1859:                  onClick={() => setShowPinyin(!showPinyin)}
+src/App.tsx:1897:                    onClick={() => setIsInlineEditing(false)}
+src/App.tsx:1903:                    onClick={() => {
+src/App.tsx:2261:                      onClick={() => logout()}
+src/App.tsx:2279:                          onClick={handleStopSync}
+src/App.tsx:2289:                          onClick={handlePushToCloud}
+src/App.tsx:2295:                          onClick={handlePullFromCloud}
+src/App.tsx:2328:                    onClick={() => googleSignIn()}
+src/App.tsx:2373:          onClick={(e) => {
+src/App.tsx:2410:          onClick={() => setMainTab('home')}
+src/App.tsx:2420:          onClick={() => setMainTab('notebook')}
+src/App.tsx:2430:          onClick={() => setMainTab('vocabulary')}
+src/App.tsx:2440:          onClick={() => setMainTab('chat')}
+src/App.tsx:2450:          onClick={() => setMainTab('account')}

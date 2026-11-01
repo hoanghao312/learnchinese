@@ -1,0 +1,57 @@
+{
+  "collections": [
+    {
+      "name": "words",
+      "description": "Vocabulary words saved by the user.",
+      "security": {
+        "read": "request.auth != null && request.auth.uid == resource.data.userId",
+        "create": "request.auth != null && request.auth.uid == request.resource.data.userId",
+        "update": "request.auth != null && request.auth.uid == resource.data.userId && request.auth.uid == request.resource.data.userId",
+        "delete": "request.auth != null && request.auth.uid == resource.data.userId"
+      },
+      "fields": [
+        { "name": "userId", "type": "string" },
+        { "name": "text", "type": "string" },
+        { "name": "pinyin", "type": "string" },
+        { "name": "translation", "type": "string" },
+        { "name": "isKnown", "type": "boolean" },
+        { "name": "createdAt", "type": "number" },
+        { "name": "hskLevel", "type": "string" },
+        { "name": "folderId", "type": "string" },
+        { "name": "partOfSpeech", "type": "string" },
+        { "name": "notes", "type": "string" }
+      ],
+      "indexes": [
+        {
+          "fields": ["userId", "createdAt"]
+        },
+        {
+          "fields": ["userId", "folderId"]
+        },
+        {
+          "fields": ["userId", "isKnown"]
+        }
+      ]
+    },
+    {
+      "name": "folders",
+      "description": "Folders for organizing words.",
+      "security": {
+        "read": "request.auth != null && request.auth.uid == resource.data.userId",
+        "create": "request.auth != null && request.auth.uid == request.resource.data.userId",
+        "update": "request.auth != null && request.auth.uid == resource.data.userId && request.auth.uid == request.resource.data.userId",
+        "delete": "request.auth != null && request.auth.uid == resource.data.userId"
+      },
+      "fields": [
+        { "name": "userId", "type": "string" },
+        { "name": "name", "type": "string" },
+        { "name": "createdAt", "type": "number" }
+      ],
+      "indexes": [
+        {
+          "fields": ["userId", "createdAt"]
+        }
+      ]
+    }
+  ]
+}

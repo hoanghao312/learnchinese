@@ -1,0 +1,182 @@
+src/components/TextReader.tsx:404:onClick={handlePlaySelection}
+src/components/TextReader.tsx:413:onClick={handleToggleRecordSelection}
+src/components/TextReader.tsx:422:onClick={() => setIsSelectionLooping(!isSelectionLooping)}
+src/components/TextReader.tsx:431:onClick={handleTranslateSelection}
+src/components/TextReader.tsx:439:onClick={handleAnalyzeGrammar}
+src/components/TextReader.tsx:498:onClick={togglePlayRecord}
+src/components/ConfirmModal.tsx:35:onClick={onCancel}
+src/components/ConfirmModal.tsx:41:onClick={onConfirm}
+src/components/SavedWordsList.tsx:498:onClick={() => setShowAdvancedFilters(!showAdvancedFilters)}
+src/components/SavedWordsList.tsx:506:onClick={() => setShowFolderModal(true)}
+src/components/SavedWordsList.tsx:517:onClick={() => setDisplayMode('zh-vi')}
+src/components/SavedWordsList.tsx:528:onClick={() => setDisplayMode('vi-zh')}
+src/components/SavedWordsList.tsx:549:onClick={() => setShowAdvancedFilters(false)}
+src/components/SavedWordsList.tsx:561:onClick={() => setShowAdvancedFilters(false)}
+src/components/SavedWordsList.tsx:595:onClick={() => setSortBy(sortBy === 'date_desc' ? 'default' : 'date_desc')}
+src/components/SavedWordsList.tsx:601:onClick={() => setSortBy(sortBy === 'date_asc' ? 'default' : 'date_asc')}
+src/components/SavedWordsList.tsx:641:onClick={() => setSortBy(sortBy === 'score_desc' ? 'default' : 'score_desc')}
+src/components/SavedWordsList.tsx:647:onClick={() => setSortBy(sortBy === 'score_asc' ? 'default' : 'score_asc')}
+src/components/SavedWordsList.tsx:669:onClick={() => setShowAdvancedFilters(false)}
+src/components/SavedWordsList.tsx:682:onClick={() => setFlashcardMode(displayMode)}
+src/components/SavedWordsList.tsx:697:onClick={() => fileInputRef.current?.click()}
+src/components/SavedWordsList.tsx:744:onClick={handleRemoveDuplicates}
+src/components/SavedWordsList.tsx:753:onClick={() => setShowAddForm(!showAddForm)}
+src/components/SavedWordsList.tsx:767:onClick={() => setActiveFilter(activeFilter === 'learning' ? null : 'learning')}
+src/components/SavedWordsList.tsx:777:onClick={() => setActiveFilter(activeFilter === 'known' ? null : 'known')}
+src/components/SavedWordsList.tsx:864:onClick={() => setActiveFolderId(null)}
+src/components/SavedWordsList.tsx:872:onClick={() => setActiveFolderId('all')}
+src/components/SavedWordsList.tsx:889:onClick={() => setActiveFolderId('uncategorized')}
+src/components/SavedWordsList.tsx:931:onClick={() => { if(editingFolderName.trim()) { onUpdateFolder(f.id, editingFolderName.trim()); setEditingFolderId(null); }
+src/components/SavedWordsList.tsx:934:onClick={() => setEditingFolderId(null)}
+src/components/SavedWordsList.tsx:941:onClick={() => setActiveFolderId(f.id)}
+src/components/SavedWordsList.tsx:976:onClick={() => { if(subfolderName.trim()) { onCreateFolder(subfolderName.trim(), f.id); setAddingSubfolderTo(null); }
+src/components/SavedWordsList.tsx:979:onClick={() => setAddingSubfolderTo(null)}
+src/components/SavedWordsList.tsx:1016:onClick={() => setActiveFolderId('all')}
+src/components/SavedWordsList.tsx:1038:onClick={() => setActiveFolderId('uncategorized')}
+src/components/SavedWordsList.tsx:1077:onClick={() => setActiveFolderId(f.id)}
+src/components/SavedWordsList.tsx:1089:onClick={(e) => e.stopPropagation()}
+src/components/SavedWordsList.tsx:1104:onClick={() => { if(editingFolderName.trim()) { onUpdateFolder(f.id, editingFolderName.trim()); setEditingFolderId(null); }
+src/components/SavedWordsList.tsx:1107:onClick={() => setEditingFolderId(null)}
+src/components/SavedWordsList.tsx:1137:onClick={() => { if(subfolderName.trim()) { onCreateFolder(subfolderName.trim(), f.id); setAddingSubfolderTo(null); }
+src/components/SavedWordsList.tsx:1140:onClick={() => setAddingSubfolderTo(null)}
+src/components/SavedWordsList.tsx:1245:onClick={() => setEditingWordId(null)}
+src/components/SavedWordsList.tsx:1299:onClick={() => setEditingWordId(null)}
+src/components/SavedWordsList.tsx:1392:onClick={(e) => e.stopPropagation()}
+src/components/SavedWordsList.tsx:1528:onClick={() => setCurrentPage(p => Math.max(1, p - 1))}
+src/components/SavedWordsList.tsx:1538:onClick={() => setCurrentPage(p => Math.min(Math.ceil(sortedWords.length / ITEMS_PER_PAGE), p + 1))}
+src/components/SavedWordsList.tsx:1568:onClick={(e) => e.stopPropagation()}
+src/components/SavedWordsList.tsx:1652:onClick={(e) => e.stopPropagation()}
+src/components/SavedWordsList.tsx:1908:onClick={() => setFolderToDelete(null)}
+src/components/GoogleDrivePickerModal.tsx:181:onClick={navigateBack}
+src/components/GoogleDrivePickerModal.tsx:187:onClick={onClose}
+src/components/GoogleDrivePickerModal.tsx:200:onClick={() => navigateToBreadcrumb(idx)}
+src/components/GoogleDrivePickerModal.tsx:256:onClick={() => handleFileClick(file)}
+src/components/AudioRecorder.tsx:219:onClick={playAiVoice}
+src/components/AudioRecorder.tsx:234:onClick={toggleRecording}
+src/components/AudioRecorder.tsx:285:onClick={() => togglePlayback(rec)}
+src/components/AudioRecorder.tsx:296:onClick={() => downloadRecording(rec)}
+src/components/AudioRecorder.tsx:303:onClick={() => deleteRecording(rec.id)}
+src/components/NotebookChat.tsx:374:onClick={() => setShowStoryModal(false)}
+src/components/NotebookChat.tsx:388:onClick={() => setStoryCount(count)}
+src/components/NotebookChat.tsx:405:onClick={() => setStoryLength(len)}
+src/components/NotebookChat.tsx:416:onClick={() => setStoryFilterType('vocab')}
+src/components/NotebookChat.tsx:491:onClick={() => setShowStoryModal(false)}
+src/components/NotebookChat.tsx:579:onClick={() => setIsSidebarOpen(false)}
+src/components/NotebookChat.tsx:587:onClick={createNewSession}
+src/components/NotebookChat.tsx:599:onClick={() => switchSession(session.id)}
+src/components/NotebookChat.tsx:616:onClick={(e) => e.stopPropagation()}
+src/components/NotebookChat.tsx:637:onClick={(e) => deleteSession(e, session.id)}
+src/components/NotebookChat.tsx:664:onClick={() => setIsSidebarOpen(true)}
+src/components/NotebookChat.tsx:673:onClick={() => setSessionToDelete(currentSessionId)}
+src/components/NotebookChat.tsx:680:onClick={onClose}
+src/components/NotebookChat.tsx:715:onClick={() => handleEditPrompt(msg)}
+src/components/NotebookChat.tsx:757:onClick={() => setShowStoryModal(true)}
+src/components/NotebookChat.tsx:855:onClick={() => setSessionToDelete(null)}
+src/components/NotebookChat.tsx:861:onClick={() => confirmDeleteSession(sessionToDelete)}
+src/components/NotebookChat.tsx:876:onClick={() => setContextMenu(null)}
+src/components/WordPopup.tsx:292:onClick={() => setIsEditing(false)}
+src/components/WordPopup.tsx:384:onClick={() => handleSpeakWord(1.0)}
+src/components/WordPopup.tsx:392:onClick={handleToggleRecord}
+src/components/WordPopup.tsx:403:onClick={() => onToggleSave(token)}
+src/components/WordPopup.tsx:414:onClick={() => onMarkKnown(token)}
+src/components/WordPopup.tsx:437:onClick={togglePlayRecord}
+src/components/AssistantChat.tsx:195:onClick={() => setShowClearConfirm(true)}
+src/components/AssistantChat.tsx:203:onClick={onClose}
+src/components/AssistantChat.tsx:336:onClick={() => setContextMenu(null)}
+src/components/AssistantChat.tsx:400:onClick={() => setShowClearConfirm(false)}
+src/components/DictUploader.tsx:308:onClick={() => !isProcessing && fileInputRef.current?.click()}
+src/components/DictUploader.tsx:340:onClick={handleGoogleDriveClick}
+src/components/DictUploader.tsx:377:onClick={() => exportFile(f)}
+src/components/DictUploader.tsx:385:onClick={() => handleDeleteFile(f.id, f.keys)}
+src/components/PracticeDocUploader.tsx:292:onClick={() => !isProcessing && fileInputRef.current?.click()}
+src/components/PracticeDocUploader.tsx:324:onClick={handleGoogleDriveClick}
+src/components/PracticeDocUploader.tsx:361:onClick={() => exportFile(f)}
+src/components/PracticeDocUploader.tsx:369:onClick={() => handleDeleteFile(f.id, f.keys)}
+src/components/Flashcards.tsx:213:onClick={() => setIncludeSubfolders(prev => !prev)}
+src/components/Flashcards.tsx:244:onClick={() => setIsExpanded(!isExpanded)}
+src/components/Flashcards.tsx:250:onClick={onClose}
+src/components/Flashcards.tsx:343:onClick={handleSpeak}
+src/components/Flashcards.tsx:396:onClick={(e) => e.stopPropagation()}
+src/components/Flashcards.tsx:471:onClick={() => handleGrade(1)}
+src/components/Flashcards.tsx:477:onClick={() => handleGrade(2)}
+src/components/Flashcards.tsx:483:onClick={() => handleGrade(3)}
+src/components/Flashcards.tsx:489:onClick={() => handleGrade(4)}
+src/components/CustomFolderSelect.tsx:55:onClick={(e) => hasChildren ? toggleExpand(e, child.id) : undefined}
+src/components/CustomFolderSelect.tsx:79:onClick={() => setIsOpen(!isOpen)}
+src/components/SavedWordsList.tsx.bak:374:onClick={() => setShowFolderModal(true)}
+src/components/SavedWordsList.tsx.bak:385:onClick={() => setDisplayMode('zh-vi')}
+src/components/SavedWordsList.tsx.bak:396:onClick={() => setDisplayMode('vi-zh')}
+src/components/SavedWordsList.tsx.bak:410:onClick={() => setFlashcardMode(displayMode)}
+src/components/SavedWordsList.tsx.bak:425:onClick={() => fileInputRef.current?.click()}
+src/components/SavedWordsList.tsx.bak:471:onClick={() => setShowAddForm(!showAddForm)}
+src/components/SavedWordsList.tsx.bak:485:onClick={() => setActiveFilter(activeFilter === 'learning' ? null : 'learning')}
+src/components/SavedWordsList.tsx.bak:497:onClick={() => setActiveFilter(activeFilter === 'known' ? null : 'known')}
+src/components/SavedWordsList.tsx.bak:584:onClick={() => setActiveFolderId(null)}
+src/components/SavedWordsList.tsx.bak:591:onClick={() => setActiveFolderId('all')}
+src/components/SavedWordsList.tsx.bak:603:onClick={() => setActiveFolderId('uncategorized')}
+src/components/SavedWordsList.tsx.bak:641:onClick={() => { if(editingFolderName.trim()) { onUpdateFolder(f.id, editingFolderName.trim()); setEditingFolderId(null); }
+src/components/SavedWordsList.tsx.bak:644:onClick={() => setEditingFolderId(null)}
+src/components/SavedWordsList.tsx.bak:651:onClick={() => setActiveFolderId(f.id)}
+src/components/SavedWordsList.tsx.bak:712:onClick={(e) => { e.stopPropagation(); setEditingFolderId(f.id); setEditingFolderName(f.name); }
+src/components/SavedWordsList.tsx.bak:751:onClick={() => { if(subfolderName.trim()) { onCreateFolder(subfolderName.trim(), f.id); setAddingSubfolderTo(null); }
+src/components/SavedWordsList.tsx.bak:754:onClick={() => setAddingSubfolderTo(null)}
+src/components/SavedWordsList.tsx.bak:849:onClick={() => setActiveFolderId('all')}
+src/components/SavedWordsList.tsx.bak:868:onClick={() => setActiveFolderId('uncategorized')}
+src/components/SavedWordsList.tsx.bak:906:onClick={() => setActiveFolderId(f.id)}
+src/components/SavedWordsList.tsx.bak:935:onClick={(e) => e.stopPropagation()}
+src/components/SavedWordsList.tsx.bak:950:onClick={() => { if(editingFolderName.trim()) { onUpdateFolder(f.id, editingFolderName.trim()); setEditingFolderId(null); }
+src/components/SavedWordsList.tsx.bak:953:onClick={() => setEditingFolderId(null)}
+src/components/SavedWordsList.tsx.bak:1029:onClick={() => { if(subfolderName.trim()) { onCreateFolder(subfolderName.trim(), f.id); setAddingSubfolderTo(null); }
+src/components/SavedWordsList.tsx.bak:1032:onClick={() => setAddingSubfolderTo(null)}
+src/components/SavedWordsList.tsx.bak:1128:onClick={() => setEditingWordId(null)}
+src/components/SavedWordsList.tsx.bak:1182:onClick={() => setEditingWordId(null)}
+src/components/SavedWordsList.tsx.bak:1247:onClick={(e) => e.stopPropagation()}
+src/components/SavedWordsList.tsx.bak:1364:onClick={() => setCurrentPage(p => Math.max(1, p - 1))}
+src/components/SavedWordsList.tsx.bak:1374:onClick={() => setCurrentPage(p => Math.min(Math.ceil(filteredWords.length / ITEMS_PER_PAGE), p + 1))}
+src/components/SavedWordsList.tsx.bak:1402:onClick={(e) => e.stopPropagation()}
+src/components/SavedWordsList.tsx.bak:1622:onClick={() => setFolderToDelete(null)}
+src/components/FileUploader.tsx:85:onClick={() => fileInputRef.current?.click()}
+src/components/Practice.tsx:215:onClick={onBack}
+src/components/Practice.tsx:237:onClick={() => generatePractice('ordering', false, true)}
+src/components/Practice.tsx:252:onClick={() => setShowPinyin(!showPinyin)}
+src/components/Practice.tsx:306:onClick={() => handleChangeExercise(i, ex, 'ordering')}
+src/components/Practice.tsx:309:onClick={() => handleSaveExercise(ex, 'ordering')}
+src/components/Practice.tsx:471:onClick={() => generatePractice('ordering', false, true)}
+src/App.tsx:1325:onClick={() => setInputSourceTab("paste")}
+src/App.tsx:1338:onClick={() => setInputSourceTab("file")}
+src/App.tsx:1351:onClick={() => setInputSourceTab("dict")}
+src/App.tsx:1364:onClick={() => setInputSourceTab("practice_docs")}
+src/App.tsx:1377:onClick={() => setInputSourceTab("missing_words")}
+src/App.tsx:1595:onClick={() => exportData(missingMeaning, "tu-chua-co-nghia.xlsx", "Chưa có nghĩa")}
+src/App.tsx:1605:onClick={() => exportData(missingDict, "chua-co-trong-tu-dien.xlsx", "Thiếu từ điển")}
+src/App.tsx:1640:onClick={() => setSelectedMissingWords(prev => [...new Set([...prev, ...missingMeaning.map(w => w.text)])])}
+src/App.tsx:1645:onClick={() => setSelectedMissingWords(prev => prev.filter(w => !missingMeaning.some(m => m.text === w)))}
+src/App.tsx:1652:onClick={() => handleMergeAndLookup(selectedMissingWords.filter(w => missingMeaning.some(m => m.text === w)))}
+src/App.tsx:1656:onClick={() => handleBulkDeleteMissing(selectedMissingWords.filter(w => missingMeaning.some(m => m.text === w)))}
+src/App.tsx:1659:onClick={() => setSelectedMissingWords(prev => prev.filter(w => !missingMeaning.some(m => m.text === w)))}
+src/App.tsx:1670:onClick={(e) => { e.stopPropagation(); toggleMissingWordSelection(w.text); }
+src/App.tsx:1673:onClick={() => handleSelectSavedWordPreview(w)}
+src/App.tsx:1676:onClick={(e) => { e.stopPropagation(); setConfirmAction({ title: "Xác nhận xóa", message: `Bạn có chắc chắn muốn xóa từ "${w.text}
+src/App.tsx:1691:onClick={() => setSelectedMissingWords(prev => [...new Set([...prev, ...missingDict.map(w => w.text)])])}
+src/App.tsx:1696:onClick={() => setSelectedMissingWords(prev => prev.filter(w => !missingDict.some(m => m.text === w)))}
+src/App.tsx:1703:onClick={() => handleMergeAndLookup(selectedMissingWords.filter(w => missingDict.some(m => m.text === w)))}
+src/App.tsx:1707:onClick={() => handleBulkDeleteMissing(selectedMissingWords.filter(w => missingDict.some(m => m.text === w)))}
+src/App.tsx:1710:onClick={() => setSelectedMissingWords(prev => prev.filter(w => !missingDict.some(m => m.text === w)))}
+src/App.tsx:1721:onClick={(e) => { e.stopPropagation(); toggleMissingWordSelection(w.text); }
+src/App.tsx:1724:onClick={() => handleSelectSavedWordPreview(w)}
+src/App.tsx:1727:onClick={(e) => { e.stopPropagation(); setConfirmAction({ title: "Xác nhận xóa", message: `Bạn có chắc chắn muốn xóa từ "${w.text}
+src/App.tsx:1816:onClick={() => setIsFullscreen(!isFullscreen)}
+src/App.tsx:1827:onClick={handleSpeakFullParagraph}
+src/App.tsx:1844:onClick={() => setIsLoopingParagraph(!isLoopingParagraph)}
+src/App.tsx:1859:onClick={() => setShowPinyin(!showPinyin)}
+src/App.tsx:1897:onClick={() => setIsInlineEditing(false)}
+src/App.tsx:2261:onClick={() => logout()}
+src/App.tsx:2279:onClick={handleStopSync}
+src/App.tsx:2289:onClick={handlePushToCloud}
+src/App.tsx:2295:onClick={handlePullFromCloud}
+src/App.tsx:2328:onClick={() => googleSignIn()}
+src/App.tsx:2410:onClick={() => setMainTab('home')}
+src/App.tsx:2420:onClick={() => setMainTab('notebook')}
+src/App.tsx:2430:onClick={() => setMainTab('vocabulary')}
+src/App.tsx:2440:onClick={() => setMainTab('chat')}
+src/App.tsx:2450:onClick={() => setMainTab('account')}

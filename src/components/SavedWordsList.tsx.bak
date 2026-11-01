@@ -1,0 +1,1645 @@
+import React, { useState, useEffect } from "react";
+import { SavedWord, Token, Folder } from "../types";
+import { Search, Filter, Volume2, Trash2, BookOpen, Book, Play, Clock, Award, Star, Plus, X, Check, Loader2, FileSpreadsheet, ArrowLeftRight, Pencil, ChevronDown, ChevronUp, Download, Library, Folder as FolderIcon, FolderPlus, MoreVertical, PlusSquare, MinusSquare, ChevronRight, ArrowLeft } from "lucide-react";
+import { speakMandarin } from "../utils/speech";
+import { motion, AnimatePresence } from "motion/react";
+import * as XLSX from "xlsx";
+import Flashcards from "./Flashcards";
+
+interface SavedWordsListProps {
+  savedWords: SavedWord[];
+  folders: Folder[];
+  onCreateFolder: (name: string, parentId?: string | null) => void;
+  onUpdateFolder: (id: string, newName: string) => void;
+  onDeleteFolder: (id: string) => void;
+  onMoveToFolder: (wordIds: string[], folderId: string | null) => void;
+  onRemoveWord: (id: string | string[]) => void;
+  onToggleWordStatus?: (id: string, isKnown: boolean) => void;
+  onReviewWord?: (id: string, grade: number, mode: 'zh-vi' | 'vi-zh') => void;
+  onResetProgress?: (folderId: string | null, mode: 'zh-vi' | 'vi-zh') => void;
+  onUpdateWord?: (id: string, updatedData: Partial<SavedWord>) => void;
+  onSelectWord: (token: Token) => void;
+  onAddWord: (wordData: Omit<SavedWord, 'id' | 'savedAt'>) => void;
+  onAddWords?: (wordsData: Omit<SavedWord, 'id' | 'savedAt'>[]) => Promise<void>;
+}
+
+export default function SavedWordsList({
+  savedWords,
+  folders,
+  onCreateFolder,
+  onUpdateFolder,
+  onDeleteFolder,
+  onMoveToFolder,
+  onRemoveWord,
+  onToggleWordStatus,
+  onReviewWord,
+  onResetProgress,
+  onUpdateWord,
+  onSelectWord,
+  onAddWord,
+  onAddWords,
+}: SavedWordsListProps) {
+  const [searchQuery, setSearchQuery] = useState("");
+  const [showAddForm, setShowAddForm] = useState(false);
+  const [flashcardMode, setFlashcardMode] = useState<'zh-vi' | 'vi-zh' | null>(null);
+  const [displayMode, setDisplayMode] = useState<'zh-vi' | 'vi-zh'>('zh-vi');
+  const [newText, setNewText] = useState("");
+  const [newPinyin, setNewPinyin] = useState("");
+  const [newTranslation, setNewTranslation] = useState("");
+  const [newPartOfSpeech, setNewPartOfSpeech] = useState("");
+  const [newHskLevel, setNewHskLevel] = useState("");
+  const [isAdding, setIsAdding] = useState(false);
+
+  const [editingWordId, setEditingWordId] = useState<string | null>(null);
+  const [editPinyin, setEditPinyin] = useState("");
+  const [editTranslation, setEditTranslation] = useState("");
+  const [editPartOfSpeech, setEditPartOfSpeech] = useState("");
+  const [editHskLevel, setEditHskLevel] = useState("");
+
+  const [activeFilter, setActiveFilter] = useState<'learning' | 'known' | null>(null);
+  const [activeFolderId, setActiveFolderId] = useState<string | null>(null);
+  
+  const [showFolderModal, setShowFolderModal] = useState(false);
+  const [newFolderName, setNewFolderName] = useState("");
+  
+  const [editingFolderId, setEditingFolderId] = useState<string | null>(null);
+  const [editingFolderName, setEditingFolderName] = useState("");
+  const [folderToDelete, setFolderToDelete] = useState<string | null>(null);
+  
+  const [addingSubfolderTo, setAddingSubfolderTo] = useState<string | null>(null);
+  const [subfolderName, setSubfolderName] = useState("");
+
+  const [expandedFolders, setExpandedFolders] = useState<Set<string>>(new Set());
+
+  const [selectedWordIds, setSelectedWordIds] = useState<Set<string>>(new Set());
+
+  const [contextMenu, setContextMenu] = useState<{
+    wordId: string;
+    x: number;
+    y: number;
+    showFolders: boolean;
+    folderParentId: string | null;
+  } | null>(null);
+
+  const [columns, setColumns] = useState([
+    { id: 'text', title: 'Hán tự', flexStyle: { width: 100, flexShrink: 0 } },
+    { id: 'pinyin', title: 'Pinyin', flexStyle: { width: 120, flexShrink: 0 } },
+    { id: 'translation', title: 'Nghĩa tiếng Việt', flexStyle: { flex: 1, minWidth: 150 } },
+    { id: 'hsk', title: 'Cấp độ HSK', flexStyle: { width: 100, flexShrink: 0 } },
+    { id: 'folder', title: 'Thư mục', flexStyle: { width: 150, flexShrink: 0 } },
+  ]);
+  const [draggedColId, setDraggedColId] = useState<string | null>(null);
+  const [currentPage, setCurrentPage] = useState(1);
+  const ITEMS_PER_PAGE = 50;
+
+  useEffect(() => {
+    setCurrentPage(1);
+  }, [searchQuery, activeFilter, activeFolderId]);
+
+  useEffect(() => {
+    const handleClickOutside = () => {
+      setContextMenu(null);
+    };
+    document.addEventListener("click", handleClickOutside);
+    return () => {
+      document.removeEventListener("click", handleClickOutside);
+    };
+  }, []);
+
+  const handleDragStart = (e: React.DragEvent, id: string) => {
+    setDraggedColId(id);
+    e.dataTransfer.effectAllowed = 'move';
+  };
+
+  const handleDragOver = (e: React.DragEvent, id: string) => {
+    e.preventDefault();
+    if (!draggedColId || draggedColId === id) return;
+    
+    const draggedIndex = columns.findIndex(c => c.id === draggedColId);
+    const targetIndex = columns.findIndex(c => c.id === id);
+    if (draggedIndex !== -1 && targetIndex !== -1) {
+      const newColumns = [...columns];
+      const [removed] = newColumns.splice(draggedIndex, 1);
+      newColumns.splice(targetIndex, 0, removed);
+      setColumns(newColumns);
+    }
+  };
+
+  const handleDragEnd = () => {
+    setDraggedColId(null);
+  };
+
+  const getFolderPath = (folderId: string) => {
+    let current = folders.find(f => f.id === folderId);
+    if (!current) return '-';
+    let path = current.name;
+    while (current?.parentId) {
+      current = folders.find(f => f.id === current?.parentId);
+      if (current) path = current.name + ' / ' + path;
+    }
+    return path;
+  };
+
+  const filteredWords = activeFilter === null ? [] : savedWords.filter((word) => {
+    if (activeFilter === 'learning' && word.isKnown) return false;
+    if (activeFilter === 'known' && !word.isKnown) return false;
+    
+    if (activeFolderId === 'uncategorized' && word.folderId) return false;
+    if (activeFolderId && activeFolderId !== 'uncategorized' && activeFolderId !== 'all') {
+      if (word.folderId !== activeFolderId) {
+        let isDescendant = false;
+        let currentParent = folders.find(f => f.id === word.folderId)?.parentId;
+        while (currentParent) {
+          if (currentParent === activeFolderId) {
+            isDescendant = true;
+            break;
+          }
+          currentParent = folders.find(f => f.id === currentParent)?.parentId;
+        }
+        if (!isDescendant) return false;
+      }
+    }
+
+
+    const query = searchQuery.toLowerCase();
+    return (
+      word.text.includes(query) ||
+      word.pinyin.toLowerCase().includes(query) ||
+      word.translation.toLowerCase().includes(query) ||
+      (word.partOfSpeech && word.partOfSpeech.toLowerCase().includes(query))
+    );
+  });
+
+  const handleSpeak = (text: string) => {
+    speakMandarin(text, 1.0);
+  };
+
+  const handleAddSubmit = async (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!newText.trim()) return;
+    
+    setIsAdding(true);
+    await onAddWord({
+      text: newText.trim(),
+      pinyin: newPinyin.trim(),
+      translation: newTranslation.trim(),
+      partOfSpeech: newPartOfSpeech.trim(),
+      hskLevel: newHskLevel.trim(),
+    });
+    setIsAdding(false);
+    
+    // Reset form but keep it open in case they want to add more
+    setNewText("");
+    setNewPinyin("");
+    setNewTranslation("");
+    setNewPartOfSpeech("");
+    setNewHskLevel("");
+  };
+
+  const [isProcessingExcel, setIsProcessingExcel] = useState(false);
+  const [estimatedTimeRemaining, setEstimatedTimeRemaining] = useState<number | null>(null);
+  const fileInputRef = React.useRef<HTMLInputElement>(null);
+
+  const handleFileUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+
+    setIsProcessingExcel(true);
+    let timerId: any = null;
+    try {
+      let jsonStr: any[][] = [];
+      const fileExt = file.name.split('.').pop()?.toLowerCase();
+      
+      if (fileExt === 'txt') {
+        const textData = await file.text();
+        const lines = textData.split('\n');
+        for (const line of lines) {
+           const cleanedLine = line.trim();
+           if (!cleanedLine) continue;
+           if (cleanedLine.includes('\t')) {
+             jsonStr.push(cleanedLine.split('\t').map(c => c.trim()));
+           } else if (cleanedLine.includes(',')) {
+             jsonStr.push(cleanedLine.split(',').map(c => c.trim()));
+           } else {
+             jsonStr.push([cleanedLine]);
+           }
+        }
+      } else {
+        const data = await file.arrayBuffer();
+        const workbook = XLSX.read(data, { type: "array" });
+        const firstSheetName = workbook.SheetNames[0];
+        const worksheet = workbook.Sheets[firstSheetName];
+        jsonStr = XLSX.utils.sheet_to_json(worksheet, { header: 1 });
+      }
+
+      let validRows: { text: string; pinyin: string; translation: string; partOfSpeech: string }[] = [];
+      let estimatedSecs = 0;
+      const seenWords = new Set<string>(savedWords.map(w => w.text));
+
+      for (let i = 0; i < jsonStr.length; i++) {
+        const row = jsonStr[i] as any[];
+        if (!row || !Array.isArray(row) || row.length === 0) continue;
+
+        let chineseColIdx = -1;
+        for (let j = 0; j < row.length; j++) {
+            const val = String(row[j] || "").trim();
+            if (val && /[\u4e00-\u9fa5]/.test(val)) {
+                chineseColIdx = j;
+                break;
+            }
+        }
+
+        let text = "";
+        let pinyin = "";
+        let translation = "";
+        let partOfSpeech = "";
+        let hskLevel = "";
+
+        if (chineseColIdx !== -1) {
+            text = String(row[chineseColIdx] || "").trim();
+            pinyin = String(row[chineseColIdx + 1] || "").trim();
+            translation = String(row[chineseColIdx + 2] || "").trim();
+            partOfSpeech = String(row[chineseColIdx + 3] || "").trim();
+            hskLevel = String(row[chineseColIdx + 4] || "").trim();
+        } else {
+            text = String(row[0] || "").trim();
+            pinyin = String(row[1] || "").trim();
+            translation = String(row[2] || "").trim();
+            partOfSpeech = String(row[3] || "").trim();
+            hskLevel = String(row[4] || "").trim();
+        }
+
+        // Chỉ giữ lại Hán tự, xoá các số, ký tự đặc biệt, v.v.
+        text = text.replace(/[^\u4e00-\u9fa5]/g, "");
+
+        if (!text) continue;
+        const textLower = text.toLowerCase();
+        if (textLower === "hán" || textLower === "từ vựng" || textLower === "word" || textLower === "text") {
+            continue;
+        }
+
+        // Bỏ qua các từ vựng đã có trong danh sách
+        if (seenWords.has(text)) {
+            continue;
+        }
+
+        seenWords.add(text);
+        validRows.push({ text, pinyin, translation, partOfSpeech, hskLevel } as any);
+        
+        const hasTranslation = translation !== "";
+        const hasPinyin = pinyin !== "";
+        if (!hasTranslation || !hasPinyin) {
+          estimatedSecs += 1.5;
+        } else {
+          estimatedSecs += 0.1;
+        }
+      }
+
+      const totalEstimated = Math.ceil(estimatedSecs);
+      setEstimatedTimeRemaining(totalEstimated);
+
+      timerId = setInterval(() => {
+        setEstimatedTimeRemaining((prev) => {
+          if (prev === null) return null;
+          return prev > 0 ? prev - 1 : 0;
+        });
+      }, 1000);
+      
+      if (onAddWords) {
+        await onAddWords(validRows as any[]);
+      } else {
+        for (const rowData of validRows as any[]) {
+          await onAddWord({
+            text: rowData.text,
+            pinyin: rowData.pinyin,
+            translation: rowData.translation,
+            partOfSpeech: rowData.partOfSpeech,
+            hskLevel: rowData.hskLevel
+          });
+        }
+      }
+    } catch (err) {
+      console.error("Lỗi đọc file:", err);
+      alert("Đã xảy ra lỗi khi đọc file. Định dạng dữ liệu chưa phù hợp.");
+    } finally {
+      if (timerId) clearInterval(timerId);
+      setIsProcessingExcel(false);
+      setEstimatedTimeRemaining(null);
+      if (fileInputRef.current) fileInputRef.current.value = '';
+    }
+  };
+
+  if (flashcardMode) {
+    return (
+      <Flashcards 
+        words={savedWords} 
+        folders={folders}
+        initialFolderId={activeFolderId}
+        onReviewWord={(id, grade, mode) => {
+          if (onReviewWord) onReviewWord(id, grade, mode);
+        }} 
+        onResetProgress={onResetProgress}
+        onClose={() => setFlashcardMode(null)} 
+        learningMode={flashcardMode}
+        onChangeMode={setFlashcardMode}
+      />
+    );
+  }
+
+  return (
+    <div className="flex flex-col relative">
+            {/* Sticky Header Section */}
+      <div className="sticky top-[68px] z-40 bg-white dark:bg-slate-900 pb-4 pt-2 -mx-4 px-4 md:-mx-6 md:px-6 border-b border-slate-100 dark:border-slate-800 shadow-sm flex flex-col gap-4">
+        <div className="flex justify-center w-full">
+          <h3 className="text-lg font-bold text-slate-800 dark:text-slate-100 flex items-center gap-2">
+            <Book className="w-4 h-4 text-amber-500" />
+            <span>TỪ VỰNG ({savedWords.length})</span>
+          </h3>
+        </div>
+        <div className="flex flex-wrap items-center justify-between gap-4 w-full">
+          {/* Dynamic Search Bar & Add Folder */}
+          <div className="flex items-center gap-2 w-full sm:flex-1 sm:max-w-[400px]">
+            <div className="relative flex-1">
+              <input
+                type="text"
+                placeholder="Tìm kiếm..."
+                value={searchQuery}
+                onChange={(e) => setSearchQuery(e.target.value)}
+                className="w-full pl-8 pr-3 py-1.5 rounded-xl bg-slate-50 dark:bg-slate-850 hover:bg-slate-100/80 focus:bg-white dark:focus:bg-slate-900 border border-slate-200 dark:border-slate-800 text-slate-700 dark:text-slate-200 text-sm placeholder-slate-400 dark:placeholder-slate-500 focus:outline-none focus:ring-2 focus:ring-amber-500/20 focus:border-amber-500 transition-all duration-300"
+                id="saved-words-search"
+              />
+              <Search className="absolute left-2.5 top-1/2 transform -translate-y-1/2 w-3.5 h-3.5 text-slate-400" />
+            </div>
+            <button
+              onClick={() => setShowFolderModal(true)}
+              className="shrink-0 flex items-center justify-center gap-1.5 px-3 py-1.5 h-[34px] rounded-xl border border-amber-200 text-xs bg-amber-50 text-amber-700 hover:bg-amber-100 dark:bg-amber-900/30 dark:border-amber-800 dark:text-amber-400 dark:hover:bg-amber-900/50 font-medium transition-colors"
+            >
+              <FolderPlus className="w-3.5 h-3.5" />
+              <span className="hidden sm:inline">Thêm thư mục</span>
+            </button>
+          </div>
+
+          <div className="flex flex-wrap items-center justify-center gap-3 w-full md:w-auto md:justify-end">
+            <div className="flex w-full sm:w-auto bg-slate-100 dark:bg-slate-800 rounded-xl p-1 shrink-0">
+              <button
+                onClick={() => setDisplayMode('zh-vi')}
+                className={`flex-1 sm:flex-none px-2.5 py-1 rounded-lg text-[11px] sm:text-[11px] font-semibold transition-all ${
+                  displayMode === 'zh-vi' 
+                    ? 'bg-white dark:bg-slate-700 text-blue-600 dark:text-blue-400 shadow-sm' 
+                    : 'text-slate-500 hover:text-slate-700 dark:text-slate-400'
+                }`}
+                title="Hiển thị Hán-Việt"
+              >
+                Hán-Việt
+              </button>
+              <button
+                onClick={() => setDisplayMode('vi-zh')}
+                className={`flex-1 sm:flex-none px-2.5 py-1 rounded-lg text-[11px] sm:text-[11px] font-semibold transition-all ${
+                  displayMode === 'vi-zh' 
+                    ? 'bg-white dark:bg-slate-700 text-emerald-600 dark:text-emerald-400 shadow-sm' 
+                    : 'text-slate-500 hover:text-slate-700 dark:text-slate-400'
+                }`}
+                title="Hiển thị Việt-Hán"
+              >
+                Việt-Hán
+              </button>
+            </div>
+            
+            <div className="flex flex-wrap items-center justify-center gap-2 w-full sm:w-auto">
+            <button
+              onClick={() => setFlashcardMode(displayMode)}
+              className="px-2.5 py-1.5 rounded-xl border transition-all duration-300 flex-shrink-0 bg-amber-50 dark:bg-amber-900/30 text-amber-600 dark:text-amber-400 border-amber-200 dark:border-amber-800/50 hover:bg-amber-100 dark:hover:bg-amber-900/50 flex items-center justify-center gap-2"
+              title={`Ôn tập Flashcards (${displayMode === 'zh-vi' ? 'Hán-Việt' : 'Việt-Hán'})`}
+            >
+              <BookOpen className="w-3.5 h-3.5" />
+              <span className="text-[11px] font-semibold hidden sm:inline whitespace-nowrap">Flashcards</span>
+            </button>
+            <input 
+              type="file" 
+              accept=".xlsx, .xls, .csv, .txt" 
+              className="hidden" 
+              ref={fileInputRef}
+              onChange={handleFileUpload}
+            />
+            <button
+              onClick={() => fileInputRef.current?.click()}
+              disabled={isProcessingExcel}
+              className={`relative p-1.5 rounded-xl border transition-all duration-300 flex-shrink-0 bg-emerald-50 dark:bg-emerald-900/30 text-emerald-600 dark:text-emerald-400 border-emerald-200 dark:border-emerald-800/50 hover:bg-emerald-100 dark:hover:bg-emerald-900/50 disabled:opacity-50`}
+              title="Nhập từ vựng bằng file Excel"
+            >
+              {estimatedTimeRemaining !== null && (
+                <span className="absolute -top-3 -right-2 bg-emerald-500 text-white text-[10px] font-bold px-1.5 py-0.5 rounded-md min-w-[20px] text-center shadow-sm">
+                  {estimatedTimeRemaining}s
+                </span>
+              )}
+              {isProcessingExcel ? <Loader2 className="w-4 h-4 animate-spin" /> : <FileSpreadsheet className="w-3.5 h-3.5" />}
+            </button>
+
+            <button
+              onClick={() => {
+                if (savedWords.length === 0) return;
+                
+                // If there is an active filter, only export the filtered words, otherwise all
+                const wordsToExport = activeFilter !== null ? filteredWords : savedWords;
+                if (wordsToExport.length === 0) return;
+
+                const ws = XLSX.utils.json_to_sheet(
+                  wordsToExport.map(w => ({
+                    "Số TT": wordsToExport.indexOf(w) + 1,
+                    "Hán tự": w.text,
+                    "Pinyin": w.pinyin === "?" ? "" : w.pinyin,
+                    "Nghĩa tiếng Việt": w.translation === "(Chưa cấp nghĩa)" ? "" : w.translation,
+                    "Cấp độ HSK": w.hskLevel || "",
+                    "Thư mục": w.folderId ? getFolderPath(w.folderId) : "",
+                    "Loại từ": w.partOfSpeech,
+                    "Trạng thái": w.isKnown ? "Đã biết" : "Chưa biết"
+                  })),
+                  { header: ["Số TT", "Hán tự", "Pinyin", "Nghĩa tiếng Việt", "Cấp độ HSK", "Thư mục", "Loại từ", "Trạng thái"] }
+                );
+                const wb = XLSX.utils.book_new();
+                XLSX.utils.book_append_sheet(wb, ws, "Từ vựng");
+                XLSX.writeFile(wb, "tu-vung-can-hoc.xlsx");
+              }}
+              disabled={savedWords.length === 0}
+              className={`p-1.5 rounded-xl border transition-all duration-300 flex-shrink-0 bg-blue-50 dark:bg-blue-900/30 text-blue-600 dark:text-blue-400 border-blue-200 dark:border-blue-800/50 hover:bg-blue-100 dark:hover:bg-blue-900/50 disabled:opacity-50`}
+              title="Xuất từ vựng ra file Excel"
+            >
+              <Download className="w-3.5 h-3.5" />
+            </button>
+
+            <button
+              onClick={() => setShowAddForm(!showAddForm)}
+              className={`p-1.5 rounded-xl border transition-all duration-300 flex-shrink-0 ${showAddForm ? 'bg-amber-100 dark:bg-amber-900/50 border-amber-300 text-amber-700 dark:text-amber-400' : 'bg-slate-900 dark:bg-slate-100 text-white dark:text-slate-900 border-slate-900 dark:border-slate-100 hover:opacity-90'}`}
+              title="Thêm từ vựng mới"
+            >
+              {showAddForm ? <X className="w-3.5 h-3.5" /> : <Plus className="w-3.5 h-3.5" />}
+                        </button>
+            </div>
+          </div>
+        </div>
+      </div>
+          
+      {/* Drive-style Filter Bar */}
+      <div className="flex items-center gap-2 mt-6 mb-4 w-full">
+        <button
+            onClick={() => setActiveFilter(activeFilter === 'learning' ? null : 'learning')}
+            className={`flex-1 flex justify-center items-center gap-1.5 px-2 py-2 rounded-xl border text-[13px] font-medium transition-colors ${
+              activeFilter === 'learning' 
+                ? 'bg-amber-100 border-amber-200 text-amber-800 dark:bg-amber-900/40 dark:border-amber-800 dark:text-amber-300' 
+                : 'bg-white border-slate-200 text-slate-700 hover:bg-slate-50 dark:bg-slate-800 dark:border-slate-700 dark:text-slate-300 dark:hover:bg-slate-750'
+            }`}
+          >
+            {activeFilter === 'learning' && <Check className="w-3.5 h-3.5 shrink-0" />}
+            <span className="truncate">Chưa biết ({savedWords.filter(w => !w.isKnown).length})</span>
+            {activeFilter !== 'learning' && <ChevronDown className="w-4 h-4 text-slate-400 shrink-0" />}
+          </button>
+          <button
+            onClick={() => setActiveFilter(activeFilter === 'known' ? null : 'known')}
+            className={`flex-1 flex justify-center items-center gap-1.5 px-2 py-2 rounded-xl border text-[13px] font-medium transition-colors ${
+              activeFilter === 'known' 
+                ? 'bg-green-100 border-green-200 text-green-800 dark:bg-green-900/40 dark:border-green-800 dark:text-green-300' 
+                : 'bg-white border-slate-200 text-slate-700 hover:bg-slate-50 dark:bg-slate-800 dark:border-slate-700 dark:text-slate-300 dark:hover:bg-slate-750'
+            }`}
+          >
+            {activeFilter === 'known' && <Check className="w-3.5 h-3.5 shrink-0" />}
+            <span className="truncate">Đã biết ({savedWords.filter(w => w.isKnown).length})</span>
+                        {activeFilter !== 'known' && <ChevronDown className="w-4 h-4 text-slate-400 shrink-0" />}
+          </button>
+        </div>
+      {/* Add Custom Word Form */}
+      <AnimatePresence>
+        {showAddForm && (
+          <motion.form
+            initial={{ opacity: 0, height: 0, marginTop: 0 }}
+            animate={{ opacity: 1, height: 'auto', marginTop: 16 }}
+            exit={{ opacity: 0, height: 0, marginTop: 0 }}
+            className="overflow-hidden"
+            onSubmit={handleAddSubmit}
+          >
+            <div className="bg-amber-50 dark:bg-amber-950/20 border border-amber-100 dark:border-amber-900/50 rounded-2xl p-4 md:p-5 flex flex-col md:flex-row gap-3 items-end">
+              <div className="w-full md:w-1/4">
+                <label className="block text-xs font-semibold text-amber-800 dark:text-amber-500 mb-1">Chữ Hán *</label>
+                <input 
+                  required
+                  value={newText}
+                  onChange={(e) => setNewText(e.target.value)}
+                  placeholder="VD: 学习" 
+                  className="w-full px-3 py-2 rounded-xl bg-white dark:bg-slate-900 border border-amber-200 dark:border-amber-800/50 text-sm focus:outline-none focus:border-amber-400 dark:text-slate-200" 
+                />
+              </div>
+              <div className="w-full md:w-1/4">
+                <label className="block text-xs font-semibold text-amber-800 dark:text-amber-500 mb-1">Pinyin</label>
+                <input 
+                  value={newPinyin}
+                  onChange={(e) => setNewPinyin(e.target.value)}
+                  placeholder="VD: xuéxí" 
+                  className="w-full px-3 py-2 rounded-xl bg-white dark:bg-slate-900 border border-amber-200 dark:border-amber-800/50 text-sm focus:outline-none focus:border-amber-400 dark:text-slate-200" 
+                />
+              </div>
+              <div className="w-full md:w-1/4">
+                <label className="block text-xs font-semibold text-amber-800 dark:text-amber-500 mb-1">Dịch nghĩa</label>
+                <input 
+                  value={newTranslation}
+                  onChange={(e) => setNewTranslation(e.target.value)}
+                  placeholder="Tự động tra nếu để trống" 
+                  className="w-full px-3 py-2 rounded-xl bg-white dark:bg-slate-900 border border-amber-200 dark:border-amber-800/50 text-sm focus:outline-none focus:border-amber-400 dark:text-slate-200" 
+                />
+              </div>
+              <div className="w-full md:w-[15%]">
+                <label className="block text-xs font-semibold text-amber-800 dark:text-amber-500 mb-1">Cấp độ HSK</label>
+                <input 
+                  value={newHskLevel}
+                  onChange={(e) => setNewHskLevel(e.target.value)}
+                  placeholder="VD: HSK 1" 
+                  className="w-full px-3 py-2 rounded-xl bg-white dark:bg-slate-900 border border-amber-200 dark:border-amber-800/50 text-sm focus:outline-none focus:border-amber-400 dark:text-slate-200" 
+                />
+              </div>
+              <div className="w-full md:w-[15%]">
+                <label className="block text-xs font-semibold text-amber-800 dark:text-amber-500 mb-1">Từ loại</label>
+                <input 
+                  value={newPartOfSpeech}
+                  onChange={(e) => setNewPartOfSpeech(e.target.value)}
+                  placeholder="VD: Động từ" 
+                  className="w-full px-3 py-2 rounded-xl bg-white dark:bg-slate-900 border border-amber-200 dark:border-amber-800/50 text-sm focus:outline-none focus:border-amber-400 dark:text-slate-200" 
+                />
+              </div>
+              <div className="w-full md:w-[10%]">
+                <button disabled={isAdding} type="submit" className="w-full h-10 flex items-center justify-center gap-1 bg-amber-500 hover:bg-amber-600 disabled:opacity-70 text-white rounded-xl text-sm font-semibold transition-colors">
+                  {isAdding ? <Loader2 className="w-4 h-4 animate-spin" /> : <><Check className="w-3.5 h-3.5" /> <span className="md:hidden">Thêm</span></>}
+                </button>
+              </div>
+            </div>
+          </motion.form>
+        )}
+      </AnimatePresence>
+
+      {/* Layout Wrapper */}
+      <div className="flex flex-col md:flex-row gap-6 mb-4 items-start">
+        {/* Folders Sidebar */}
+        {activeFilter !== null && activeFolderId !== null && (
+          <div className="w-full md:w-56 shrink-0 flex flex-col gap-3 bg-slate-50 dark:bg-slate-800/30 p-4 rounded-2xl border border-slate-200 dark:border-slate-700/50 md:sticky md:top-[170px] md:max-h-[calc(100vh-190px)] overflow-y-auto custom-scrollbar">
+            <h3 className="text-xs font-bold uppercase tracking-wider text-slate-500 dark:text-slate-400 mb-1">Thư mục</h3>
+            <div className="flex flex-col gap-1.5">
+              <button
+                onClick={() => setActiveFolderId(null)}
+                className="w-full px-3 py-2 rounded-xl text-sm font-semibold flex items-center justify-start gap-2 transition-all bg-white dark:bg-slate-800 text-slate-600 dark:text-slate-300 border border-slate-200 dark:border-slate-700 hover:bg-slate-50 dark:hover:bg-slate-750"
+              >
+                <ArrowLeft className="w-4 h-4 shrink-0" />
+                <span>Quay lại</span>
+              </button>
+              <button
+                onClick={() => setActiveFolderId('all')}
+                className={`w-full px-2 py-2 rounded-xl text-sm font-semibold flex items-center justify-start gap-1.5 transition-all ${
+                  activeFolderId === 'all'
+                    ? 'bg-slate-200 text-slate-700 dark:bg-slate-700/50 dark:text-slate-300 border border-slate-300 dark:border-slate-600'
+                    : 'bg-white dark:bg-slate-800 text-slate-600 dark:text-slate-300 border border-slate-200 dark:border-slate-700 hover:bg-slate-50 dark:hover:bg-slate-750'
+                }`}
+              >
+                <div className="w-5 flex items-center justify-center shrink-0" />
+                <FolderIcon className="w-4 h-4 shrink-0" />
+                <span className="truncate">Tất cả từ vựng</span>
+              </button>
+              <button
+                onClick={() => setActiveFolderId('uncategorized')}
+                className={`w-full px-2 py-2 rounded-xl text-sm font-semibold flex items-center justify-start gap-1.5 transition-all ${
+                  activeFolderId === 'uncategorized'
+                    ? 'bg-slate-200 text-slate-700 dark:bg-slate-700/50 dark:text-slate-300 border border-slate-300 dark:border-slate-600'
+                    : 'bg-white dark:bg-slate-800 text-slate-600 dark:text-slate-300 border border-slate-200 dark:border-slate-700 hover:bg-slate-50 dark:hover:bg-slate-750'
+                }`}
+              >
+                <div className="w-5 flex items-center justify-center shrink-0" />
+                <FolderIcon className="w-4 h-4 shrink-0" />
+                <span className="truncate">Chưa phân loại</span>
+              </button>
+              
+              {folders.filter(f => !f.parentId).map(folder => {
+                const renderFolder = (f: Folder, level: number) => {
+                  const children = folders.filter(child => child.parentId === f.id);
+                  const isEditing = editingFolderId === f.id;
+                  const isAddingSubfolder = addingSubfolderTo === f.id;
+                  const isExpanded = expandedFolders.has(f.id);
+
+                  return (
+                    <React.Fragment key={f.id}>
+                      <div className="group relative flex items-center w-full" style={{ paddingLeft: `${level * 24}px` }}>
+                        {isEditing ? (
+                          <div className="flex w-full gap-1 items-center mt-1 mb-1">
+                            <input
+                              value={editingFolderName}
+                              onChange={(e) => setEditingFolderName(e.target.value)}
+                              className="flex-1 px-2 py-1.5 rounded-lg text-sm bg-white dark:bg-slate-800 border border-amber-300 dark:border-amber-700 outline-none focus:ring-1 focus:ring-amber-500"
+                              autoFocus
+                              onKeyDown={(e) => {
+                                if (e.key === 'Enter' && editingFolderName.trim()) {
+                                  onUpdateFolder(f.id, editingFolderName.trim());
+                                  setEditingFolderId(null);
+                                } else if (e.key === 'Escape') {
+                                  setEditingFolderId(null);
+                                }
+                              }}
+                            />
+                            <button onClick={() => { if(editingFolderName.trim()) { onUpdateFolder(f.id, editingFolderName.trim()); setEditingFolderId(null); } }} className="p-2 sm:p-1.5 min-w-[36px] min-h-[36px] bg-amber-500 flex items-center justify-center hover:bg-amber-600 text-white rounded-lg transition-colors">
+                              <Check className="w-3.5 h-3.5" />
+                            </button>
+                            <button onClick={() => setEditingFolderId(null)} className="p-2 sm:p-1.5 min-w-[36px] min-h-[36px] bg-slate-200 flex items-center justify-center hover:bg-slate-300 dark:bg-slate-700 dark:hover:bg-slate-600 text-slate-600 dark:text-slate-300 rounded-lg transition-colors">
+                              <X className="w-3.5 h-3.5" />
+                            </button>
+                          </div>
+                        ) : (
+                          <>
+                            <button
+                              onClick={() => setActiveFolderId(f.id)}
+                              className={`w-full px-2 py-2 rounded-xl text-sm font-semibold flex items-center justify-start gap-1.5 transition-all ${
+                                activeFolderId === f.id 
+                                  ? 'bg-amber-100 text-amber-700 dark:bg-amber-900/40 dark:text-amber-400 border border-amber-200 dark:border-amber-800' 
+                                  : 'bg-white dark:bg-slate-800 text-slate-600 dark:text-slate-300 border border-slate-200 dark:border-slate-700 hover:bg-slate-50 dark:hover:bg-slate-750'
+                              }`}
+                            >
+                              <div className="w-5 flex items-center justify-center shrink-0">
+                                {children.length > 0 ? (
+                                  <div 
+                                    onClick={(e) => {
+                                      e.stopPropagation();
+                                      const newExpanded = new Set(expandedFolders);
+                                      if (isExpanded) {
+                                        newExpanded.delete(f.id);
+                                      } else {
+                                        newExpanded.add(f.id);
+                                      }
+                                      setExpandedFolders(newExpanded);
+                                    }}
+                                    className="cursor-pointer font-mono font-bold text-slate-500 hover:text-slate-800 dark:text-slate-400 dark:hover:text-slate-200 flex items-center justify-center w-full h-full text-base"
+                                  >
+                                    {isExpanded ? "-" : "+"}
+                                  </div>
+                                ) : (
+                                  <div className="font-mono font-bold text-slate-400 dark:text-slate-500 flex items-center justify-center w-full h-full text-base">
+                                    -
+                                  </div>
+                                )}
+                              </div>
+                              <span className="truncate">{f.name}</span>
+                            </button>
+                            <div className="absolute right-2 flex gap-1 opacity-100 md:opacity-0 md:group-hover:opacity-100 transition-opacity z-10 bg-white/80 dark:bg-slate-800/80 backdrop-blur-sm rounded-lg p-0.5 shadow-sm border border-slate-100 dark:border-slate-700">
+                              <button 
+                                onClick={(e) => { 
+                                  e.stopPropagation(); 
+                                  setActiveFolderId(f.id);
+                                  setFlashcardMode(displayMode);
+                                }}
+                                className="w-6 h-6 bg-emerald-50 hover:bg-emerald-100 text-emerald-600 dark:bg-emerald-900/30 dark:hover:bg-emerald-900/50 dark:text-emerald-400 rounded-md flex items-center justify-center transition-colors"
+                                title="Học Flashcards"
+                              >
+                                <Play className="w-3.5 h-3.5" />
+                              </button>
+                              <button 
+                                onClick={(e) => { 
+                                  e.stopPropagation(); 
+                                  setAddingSubfolderTo(f.id); 
+                                  setSubfolderName(""); 
+                                  if (!isExpanded) {
+                                    const newExpanded = new Set(expandedFolders);
+                                    newExpanded.add(f.id);
+                                    setExpandedFolders(newExpanded);
+                                  }
+                                }}
+                                className="w-6 h-6 bg-blue-50 hover:bg-blue-100 text-blue-600 dark:bg-blue-900/30 dark:hover:bg-blue-900/50 dark:text-blue-400 rounded-md flex items-center justify-center transition-colors"
+                                title="Thêm thư mục con"
+                              >
+                                <Plus className="w-3.5 h-3.5" />
+                              </button>
+                              <button 
+                                onClick={(e) => { e.stopPropagation(); setEditingFolderId(f.id); setEditingFolderName(f.name); }}
+                                className="w-6 h-6 bg-slate-100 hover:bg-slate-200 text-slate-600 dark:bg-slate-700 dark:hover:bg-slate-600 dark:text-slate-300 rounded-md flex items-center justify-center transition-colors"
+                                title="Đổi tên"
+                              >
+                                <Pencil className="w-3.5 h-3.5" />
+                              </button>
+                              <button 
+                                onClick={(e) => {
+                                  e.stopPropagation();
+                                  if (activeFolderId === f.id) setActiveFolderId(null);
+                                  setFolderToDelete(f.id);
+                                }}
+                                className="w-6 h-6 bg-red-50 hover:bg-red-100 text-red-600 dark:bg-red-900/30 dark:hover:bg-red-900/50 dark:text-red-400 rounded-md flex items-center justify-center transition-colors"
+                                title="Xoá thư mục"
+                              >
+                                <Trash2 className="w-3.5 h-3.5" />
+                              </button>
+                            </div>
+                          </>
+                        )}
+                      </div>
+
+                      {isAddingSubfolder && (
+                        <div className="flex w-full gap-1 items-center mt-1 mb-1" style={{ paddingLeft: `${(level + 1) * 12}px` }}>
+                          <input
+                            value={subfolderName}
+                            onChange={(e) => setSubfolderName(e.target.value)}
+                            placeholder="Tên thư mục con..."
+                            className="flex-1 px-2 py-1.5 rounded-lg text-sm bg-white dark:bg-slate-800 border border-blue-300 dark:border-blue-700 outline-none focus:ring-1 focus:ring-blue-500"
+                            autoFocus
+                            onKeyDown={(e) => {
+                              if (e.key === 'Enter' && subfolderName.trim()) {
+                                onCreateFolder(subfolderName.trim(), f.id);
+                                setAddingSubfolderTo(null);
+                              } else if (e.key === 'Escape') {
+                                setAddingSubfolderTo(null);
+                              }
+                            }}
+                          />
+                          <button onClick={() => { if(subfolderName.trim()) { onCreateFolder(subfolderName.trim(), f.id); setAddingSubfolderTo(null); } }} className="p-1.5 bg-blue-500 hover:bg-blue-600 text-white rounded-lg transition-colors">
+                            <Check className="w-3.5 h-3.5" />
+                          </button>
+                          <button onClick={() => setAddingSubfolderTo(null)} className="p-2 sm:p-1.5 min-w-[36px] min-h-[36px] bg-slate-200 flex items-center justify-center hover:bg-slate-300 dark:bg-slate-700 dark:hover:bg-slate-600 text-slate-600 dark:text-slate-300 rounded-lg transition-colors">
+                            <X className="w-3.5 h-3.5" />
+                          </button>
+                        </div>
+                      )}
+
+                      {isExpanded && children.map(c => renderFolder(c, level + 1))}
+                    </React.Fragment>
+                  );
+                };
+                return renderFolder(folder, 0);
+              })}
+
+            </div>
+
+
+          </div>
+        )}
+
+        <div className="flex-1 flex flex-col w-full min-w-0 gap-3">
+          {/* Bulk actions */}
+          {activeFilter !== null && selectedWordIds.size > 0 && (
+            <div className="flex items-center gap-3 p-3 bg-blue-50 dark:bg-blue-900/20 border border-blue-200 dark:border-blue-800/50 rounded-xl animate-in fade-in slide-in-from-top-2">
+              <span className="text-sm font-semibold text-blue-800 dark:text-blue-300 shrink-0">
+                Đã chọn {selectedWordIds.size} từ
+              </span>
+              <div className="h-4 w-px bg-blue-300 dark:bg-blue-700/50 shrink-0"></div>
+              
+              <div className="flex items-center gap-2 overflow-x-auto pb-1 -mb-1 scrollbar-thin">
+                <button 
+                  onClick={() => {
+                    onRemoveWord(Array.from(selectedWordIds));
+                    setSelectedWordIds(new Set());
+                  }}
+                  className="px-2 py-1 bg-red-100 hover:bg-red-200 text-red-700 dark:bg-red-900/30 dark:hover:bg-red-900/50 dark:text-red-400 text-xs font-semibold rounded border border-red-200 dark:border-red-800 transition-colors whitespace-nowrap shrink-0 flex items-center gap-1 mr-2"
+                >
+                  <Trash2 className="w-3.5 h-3.5" />
+                  Xóa
+                </button>
+                <div className="h-4 w-px bg-blue-300 dark:bg-blue-700/50 shrink-0 mr-2"></div>
+                <button 
+                  onClick={() => {
+                    onRemoveWord(Array.from(selectedWordIds));
+                    setSelectedWordIds(new Set());
+                  }}
+                  className="px-2 py-1 bg-red-100 hover:bg-red-200 text-red-700 dark:bg-red-900/30 dark:hover:bg-red-900/50 dark:text-red-400 text-xs font-semibold rounded border border-red-200 dark:border-red-800 transition-colors whitespace-nowrap shrink-0 flex items-center gap-1 mr-2"
+                >
+                  <Trash2 className="w-3.5 h-3.5" />
+                  Xóa
+                </button>
+                <div className="h-4 w-px bg-blue-300 dark:bg-blue-700/50 shrink-0 mr-2"></div>
+                <span className="text-xs font-medium text-blue-700 dark:text-blue-400 shrink-0">Thêm vào thư mục:</span>
+                <div className="flex gap-1">
+                  <button 
+                    onClick={() => {
+                      onMoveToFolder(Array.from(selectedWordIds), null);
+                      setSelectedWordIds(new Set());
+                    }}
+                    className="px-2 py-1 bg-white hover:bg-blue-100 text-blue-700 dark:bg-blue-950 dark:hover:bg-blue-900 dark:text-blue-300 text-xs font-medium rounded border border-blue-200 dark:border-blue-800 transition-colors whitespace-nowrap"
+                  >
+                    Bỏ thư mục
+                  </button>
+                  {folders.map(f => (
+                    <button 
+                      key={f.id}
+                      onClick={() => {
+                        onMoveToFolder(Array.from(selectedWordIds), f.id);
+                        setSelectedWordIds(new Set());
+                      }}
+                      className="px-2 py-1 bg-white hover:bg-blue-100 text-blue-700 dark:bg-blue-950 dark:hover:bg-blue-900 dark:text-blue-300 text-xs font-medium rounded border border-blue-200 dark:border-blue-800 transition-colors whitespace-nowrap"
+                    >
+                      {getFolderPath(f.id)}
+                    </button>
+                  ))}
+                </div>
+              </div>
+            </div>
+          )}
+
+          {/* List View */}
+          {activeFilter !== null && activeFolderId === null ? (
+            <div className="flex flex-col bg-white dark:bg-slate-900 rounded-xl border border-slate-200 dark:border-slate-700/50 overflow-hidden">
+              {/* Header */}
+              <div className="grid grid-cols-[1fr_40px_120px] md:grid-cols-[1fr_120px_140px] items-center px-2 md:px-4 py-3 text-[11px] md:text-[14px] font-bold text-slate-500 dark:text-slate-400 border-b border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900 uppercase tracking-wider">
+                <div className="pl-6 md:pl-6 md:pl-[44px]">Tên thư mục</div>
+                <div className="text-center"><span className="hidden md:inline">Số lượng từ</span><span className="md:hidden">Từ</span></div>
+                <div className="text-center">Thao tác</div>
+              </div>
+
+              
+              <div className="flex flex-col divide-y divide-slate-100 dark:divide-slate-800/50">
+                {(() => {
+                  const allCount = savedWords.filter(w => (activeFilter === 'learning' ? !w.isKnown : w.isKnown)).length;
+                  return (
+                    <div 
+                      onClick={() => setActiveFolderId('all')}
+                      className="group grid grid-cols-[1fr_40px_120px] px-2 md:px-4 text-xs md:text-sm md:grid-cols-[1fr_120px_140px] items-center px-4 py-3 hover:bg-slate-50 dark:hover:bg-slate-800/50 cursor-pointer transition-colors"
+                    >
+                      <div className="flex items-center gap-3 pl-6 md:pl-[44px]">
+                        <FolderIcon className="w-5 h-5 text-slate-400 fill-slate-400 dark:text-slate-500 dark:fill-slate-500" />
+                        <span className="text-[15px] font-medium text-slate-700 dark:text-slate-200">Tất cả từ vựng</span>
+                      </div>
+                      <div className="text-center text-[15px] font-medium text-slate-500">
+                        {allCount}
+                      </div>
+                      <div></div>
+                    </div>
+                  );
+                })()}
+
+                {(() => {
+                  const uncategorizedCount = savedWords.filter(w => !w.folderId && (activeFilter === 'learning' ? !w.isKnown : w.isKnown)).length;
+                  return (
+                    <div 
+                      onClick={() => setActiveFolderId('uncategorized')}
+                      className="group grid grid-cols-[1fr_40px_120px] px-2 md:px-4 text-xs md:text-sm md:grid-cols-[1fr_120px_140px] items-center px-4 py-3 hover:bg-slate-50 dark:hover:bg-slate-800/50 cursor-pointer transition-colors"
+                    >
+                      <div className="flex items-center gap-3 pl-6 md:pl-[44px]">
+                        <FolderIcon className="w-5 h-5 text-slate-400 fill-slate-400 dark:text-slate-500 dark:fill-slate-500" />
+                        <span className="text-[15px] font-medium text-slate-700 dark:text-slate-200">Chưa phân loại</span>
+                      </div>
+                      <div className="text-center text-[15px] font-medium text-slate-500">
+                        {uncategorizedCount}
+                      </div>
+                      <div></div>
+                    </div>
+                  );
+                })()}
+
+                {folders.filter(f => !f.parentId).map(folder => {
+                  const renderFolderRow = (f, level) => {
+                    const children = folders.filter(child => child.parentId === f.id);
+                    const isExpanded = expandedFolders.has(f.id);
+                    const folderWordsCount = savedWords.filter(w => {
+                      if (activeFilter === 'learning' && w.isKnown) return false;
+                      if (activeFilter === 'known' && !w.isKnown) return false;
+                      if (w.folderId === f.id) return true;
+                      let isDescendant = false;
+                      let currentParent = folders.find(pf => pf.id === w.folderId)?.parentId;
+                      while (currentParent) {
+                        if (currentParent === f.id) {
+                          isDescendant = true;
+                          break;
+                        }
+                        currentParent = folders.find(pf => pf.id === currentParent)?.parentId;
+                      }
+                      return isDescendant;
+                    }).length;
+                    
+                    return (
+                      <React.Fragment key={f.id}>
+                        <div 
+                          onClick={() => setActiveFolderId(f.id)}
+                          className="group grid grid-cols-[1fr_40px_120px] px-2 md:px-4 text-xs md:text-sm md:grid-cols-[1fr_120px_140px] items-center px-4 py-3 hover:bg-slate-50 dark:hover:bg-slate-800/50 cursor-pointer transition-colors"
+                          style={{ paddingLeft: `${level * 32 + 16}px` }}
+                        >
+                          <div className="flex items-center gap-3">
+                            <div className="w-6 flex items-center justify-center shrink-0">
+                              {children.length > 0 ? (
+                                 <div 
+                                   onClick={(e) => {
+                                     e.stopPropagation();
+                                     const newExpanded = new Set(expandedFolders);
+                                     if (isExpanded) {
+                                       newExpanded.delete(f.id);
+                                     } else {
+                                       newExpanded.add(f.id);
+                                     }
+                                     setExpandedFolders(newExpanded);
+                                   }}
+                                   className="cursor-pointer font-mono font-bold text-slate-500 hover:text-slate-800 dark:text-slate-400 dark:hover:text-slate-200 flex items-center justify-center w-full h-full text-lg"
+                                 >
+                                   {isExpanded ? "-" : "+"}
+                                 </div>
+                              ) : (
+                                 <div className="font-mono font-bold text-slate-400 dark:text-slate-500 flex items-center justify-center w-full h-full text-lg">
+                                   -
+                                 </div>
+                              )}
+                            </div>
+                            {editingFolderId === f.id ? (
+                              <div className="flex w-full gap-1 items-center" onClick={(e) => e.stopPropagation()}>
+                                <input
+                                  value={editingFolderName}
+                                  onChange={(e) => setEditingFolderName(e.target.value)}
+                                  className="flex-1 px-2 py-1 rounded-md text-sm bg-white dark:bg-slate-800 border border-amber-300 dark:border-amber-700 outline-none focus:ring-1 focus:ring-amber-500"
+                                  autoFocus
+                                  onKeyDown={(e) => {
+                                    if (e.key === 'Enter' && editingFolderName.trim()) {
+                                      onUpdateFolder(f.id, editingFolderName.trim());
+                                      setEditingFolderId(null);
+                                    } else if (e.key === 'Escape') {
+                                      setEditingFolderId(null);
+                                    }
+                                  }}
+                                />
+                                <button onClick={() => { if(editingFolderName.trim()) { onUpdateFolder(f.id, editingFolderName.trim()); setEditingFolderId(null); } }} className="p-1 bg-amber-500 hover:bg-amber-600 text-white rounded-md transition-colors">
+                                  <Check className="w-3.5 h-3.5" />
+                                </button>
+                                <button onClick={() => setEditingFolderId(null)} className="p-1 bg-slate-200 hover:bg-slate-300 dark:bg-slate-700 dark:hover:bg-slate-600 text-slate-600 dark:text-slate-300 rounded-md transition-colors">
+                                  <X className="w-3.5 h-3.5" />
+                                </button>
+                              </div>
+                            ) : (
+                              <span className="text-[15px] font-medium text-slate-700 dark:text-slate-200">{f.name}</span>
+                            )}
+                          </div>
+                          <div className="text-center text-[15px] font-medium text-slate-500">
+                            {folderWordsCount}
+                          </div>
+                          <div className="flex justify-center gap-1.5 opacity-100 md:opacity-0 md:group-hover:opacity-100 transition-opacity">
+                              <button 
+                                onClick={(e) => {
+                                  e.stopPropagation();
+                                  setActiveFolderId(f.id);
+                                  setFlashcardMode(displayMode);
+                                }}
+                                className="w-6 h-6 md:w-7 md:h-7 bg-emerald-50 hover:bg-emerald-100 text-emerald-600 dark:bg-emerald-900/30 dark:hover:bg-emerald-900/50 dark:text-emerald-400 rounded-md flex items-center justify-center transition-colors"
+                                title="Học Flashcards"
+                              >
+                                <Play className="w-3.5 h-3.5" />
+                              </button>
+                              <button 
+                                onClick={(e) => {
+                                  e.stopPropagation();
+                                  setAddingSubfolderTo(f.id);
+                                  setSubfolderName("");
+                                }}
+                                className="w-6 h-6 md:w-7 md:h-7 bg-blue-50 hover:bg-blue-100 text-blue-600 dark:bg-blue-900/30 dark:hover:bg-blue-900/50 dark:text-blue-400 rounded-md flex items-center justify-center transition-colors"
+                                title="Thêm thư mục con"
+                              >
+                                <Plus className="w-3.5 h-3.5" />
+                              </button>
+                              <button 
+                                onClick={(e) => {
+                                  e.stopPropagation();
+                                  setEditingFolderId(f.id);
+                                  setEditingFolderName(f.name);
+                                }}
+                                className="w-6 h-6 md:w-7 md:h-7 bg-slate-100 hover:bg-slate-200 text-slate-600 dark:bg-slate-700 dark:hover:bg-slate-600 dark:text-slate-300 rounded-md flex items-center justify-center transition-colors"
+                                title="Đổi tên"
+                              >
+                                <Pencil className="w-3.5 h-3.5" />
+                              </button>
+                              <button 
+                                onClick={(e) => {
+                                  e.stopPropagation();
+                                  if (activeFolderId === f.id) setActiveFolderId(null);
+                                  setFolderToDelete(f.id);
+                                }}
+                                className="w-6 h-6 md:w-7 md:h-7 bg-red-50 hover:bg-red-100 text-red-600 dark:bg-red-900/30 dark:hover:bg-red-900/50 dark:text-red-400 rounded-md flex items-center justify-center transition-colors"
+                                title="Xoá thư mục"
+                              >
+                                <Trash2 className="w-3.5 h-3.5" />
+                              </button>
+                          </div>
+                        </div>
+                        {addingSubfolderTo === f.id && (
+                          <div className="group grid grid-cols-[1fr_40px_120px] px-2 md:px-4 text-xs md:text-sm md:grid-cols-[1fr_120px_140px] items-center px-4 py-2 bg-slate-50/50 dark:bg-slate-800/30" style={{ paddingLeft: `${(level + 1) * 24 + 16}px` }}>
+                            <div className="flex items-center gap-3 pl-9 pr-4">
+                              <input
+                                value={subfolderName}
+                                onChange={(e) => setSubfolderName(e.target.value)}
+                                placeholder="Tên thư mục con..."
+                                className="flex-1 px-3 py-1.5 rounded-lg text-sm bg-white dark:bg-slate-800 border border-blue-300 dark:border-blue-700 outline-none focus:ring-1 focus:ring-blue-500"
+                                autoFocus
+                                onKeyDown={(e) => {
+                                  if (e.key === 'Enter' && subfolderName.trim()) {
+                                    onCreateFolder(subfolderName.trim(), f.id);
+                                    setAddingSubfolderTo(null);
+                                  } else if (e.key === 'Escape') {
+                                    setAddingSubfolderTo(null);
+                                  }
+                                }}
+                              />
+                              <button onClick={() => { if(subfolderName.trim()) { onCreateFolder(subfolderName.trim(), f.id); setAddingSubfolderTo(null); } }} className="p-1.5 bg-blue-500 hover:bg-blue-600 text-white rounded-lg transition-colors">
+                                <Check className="w-3.5 h-3.5" />
+                              </button>
+                              <button onClick={() => setAddingSubfolderTo(null)} className="p-2 sm:p-1.5 min-w-[36px] min-h-[36px] bg-slate-200 flex items-center justify-center hover:bg-slate-300 dark:bg-slate-700 dark:hover:bg-slate-600 text-slate-600 dark:text-slate-300 rounded-lg transition-colors">
+                                <X className="w-3.5 h-3.5" />
+                              </button>
+                            </div>
+                            <div></div>
+                            <div></div>
+                          </div>
+                        )}
+                        {isExpanded && children.map(c => renderFolderRow(c, level + 1))}
+                      </React.Fragment>
+                    );
+                  };
+                  return renderFolderRow(folder, 0);
+                })}
+
+
+              </div>
+            </div>
+          ) : activeFilter !== null && filteredWords.length === 0 ? (
+            <div className="flex flex-col items-center justify-center py-16 text-center border border-dashed border-slate-250 dark:border-slate-800 rounded-3xl bg-slate-50/20">
+              <Award className="w-12 h-12 text-slate-300 dark:text-slate-700 mb-3" />
+              <h4 className="text-base font-semibold text-slate-700 dark:text-slate-300">
+                {searchQuery ? "Không tìm thấy từ vựng nào trùng khớp" : "Thư viện từ vựng còn trống"}
+              </h4>
+              <p className="text-xs text-slate-400 dark:text-slate-500 mt-1 max-w-xs">
+                {searchQuery 
+                  ? "Hãy thử tìm bằng từ khoá khác xem sao nhé." 
+                  : "Bấm vào bất cứ từ vựng nào trong đoạn văn và tích vào hình Trái Tim để lưu trữ tại đây."}
+              </p>
+            </div>
+          ) : activeFilter !== null ? (
+            <div className="flex flex-col gap-2">
+          {/* Header Row (Desktop) */}
+          {filteredWords.length > 0 && (
+            <div className="hidden sm:flex items-center gap-2 px-3 py-2 text-xs font-semibold text-slate-500 dark:text-slate-400 uppercase tracking-wider border-b border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900">
+              <div className="w-5 shrink-0 flex items-center justify-center">
+                <input 
+                  type="checkbox" 
+                  checked={filteredWords.length > 0 && selectedWordIds.size === filteredWords.length}
+                  onChange={(e) => {
+                    if (e.target.checked) {
+                      setSelectedWordIds(new Set(filteredWords.map(w => w.id)));
+                    } else {
+                      setSelectedWordIds(new Set());
+                    }
+                  }}
+                  className="w-4 h-4 rounded border-slate-300 text-amber-500 focus:ring-amber-500 cursor-pointer"
+                />
+              </div>
+              <div className="w-8 shrink-0 text-center">STT</div>
+              <div className="flex-1 flex items-center gap-2">
+                {columns.map((col, idx) => (
+                  <React.Fragment key={`${col.id}-${idx}`}>
+                    {idx > 0 && <div className="h-4 w-px bg-slate-200 dark:bg-slate-700 shrink-0" />}
+                    <div 
+                      className="relative shrink-0 flex items-center group cursor-grab active:cursor-grabbing hover:bg-slate-100 dark:hover:bg-slate-800 rounded transition-colors select-none px-1"
+                      style={col.flexStyle}
+                      draggable
+                      onDragStart={(e) => handleDragStart(e, col.id)}
+                      onDragOver={(e) => handleDragOver(e, col.id)}
+                      onDragEnd={handleDragEnd}
+                    >
+                      <span className="truncate flex-1 py-1">{col.title}</span>
+                    </div>
+                  </React.Fragment>
+                ))}
+              </div>
+              <div className="hidden sm:flex w-[100px] shrink-0 items-center justify-end pr-2 text-xs text-slate-500 font-medium">
+                <span>Ngày tạo</span>
+              </div>
+            </div>
+          )}
+
+            
+          <AnimatePresence mode="popLayout">
+            {(() => {
+              const paginatedWords = filteredWords.slice((currentPage - 1) * ITEMS_PER_PAGE, currentPage * ITEMS_PER_PAGE);
+              return paginatedWords.map((word, index) => {
+                const actualIndex = (currentPage - 1) * ITEMS_PER_PAGE + index;
+              const isSelected = selectedWordIds.has(word.id);
+              if (editingWordId === word.id) {
+                return (
+                  <motion.div
+                    key={`${word.id}-${index}`}
+                    layout
+                    initial={{ opacity: 0, scale: 0.95 }}
+                    animate={{ opacity: 1, scale: 1 }}
+                    exit={{ opacity: 0, scale: 0.95 }}
+                    transition={{ type: "spring", damping: 20 }}
+                    className="flex flex-col gap-3 bg-white dark:bg-slate-900 border border-amber-300 dark:border-amber-700/80 rounded-xl p-3 shadow-md w-full sm:w-[280px] transition-all"
+                  >
+                    <div className="flex items-center justify-between">
+                      <span className="text-xl font-bold text-slate-800 dark:text-slate-100" style={{ fontFamily: '"DFKAI-SB", "KaiTi", serif' }}>
+                        {word.text}
+                      </span>
+                      <button 
+                        onClick={() => setEditingWordId(null)}
+                        className="p-1 hover:bg-slate-100 dark:hover:bg-slate-800 rounded-full text-slate-400 hover:text-slate-600 dark:hover:text-slate-300"
+                        title="Đóng"
+                      >
+                        <X className="w-3.5 h-3.5" />
+                      </button>
+                    </div>
+                    
+                    <div className="space-y-2.5">
+                      <div>
+                        <label className="text-[11px] font-medium text-slate-500 mb-0.5 block">Pinyin</label>
+                        <input
+                          autoFocus
+                          type="text"
+                          value={editPinyin}
+                          onChange={(e) => setEditPinyin(e.target.value)}
+                          className="w-full px-2.5 py-1.5 rounded-lg text-sm bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 focus:outline-none focus:ring-2 focus:ring-amber-500/20"
+                          placeholder="Pinyin..."
+                        />
+                      </div>
+                      <div>
+                        <label className="text-[11px] font-medium text-slate-500 mb-0.5 block">Nghĩa tiếng Việt</label>
+                        <input
+                          type="text"
+                          value={editTranslation}
+                          onChange={(e) => setEditTranslation(e.target.value)}
+                          className="w-full px-2.5 py-1.5 rounded-lg text-sm bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 focus:outline-none focus:ring-2 focus:ring-amber-500/20"
+                          placeholder="Nghĩa..."
+                        />
+                      </div>
+                      <div>
+                        <label className="text-[11px] font-medium text-slate-500 mb-0.5 block">Từ loại (tuỳ chọn)</label>
+                        <input
+                          type="text"
+                          value={editPartOfSpeech}
+                          onChange={(e) => setEditPartOfSpeech(e.target.value)}
+                          className="w-full px-2.5 py-1.5 rounded-lg text-sm bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 focus:outline-none focus:ring-2 focus:ring-amber-500/20"
+                          placeholder="VD: Danh từ..."
+                        />
+                      </div>
+                      <div>
+                        <label className="text-[11px] font-medium text-slate-500 mb-0.5 block">Cấp độ HSK</label>
+                        <input
+                          type="text"
+                          value={editHskLevel}
+                          onChange={(e) => setEditHskLevel(e.target.value)}
+                          className="w-full px-2.5 py-1.5 rounded-lg text-sm bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 focus:outline-none focus:ring-2 focus:ring-amber-500/20"
+                          placeholder="VD: HSK 1..."
+                        />
+                      </div>
+                    </div>
+                    
+                    <div className="flex gap-1.5 justify-end mt-1">
+                      <button 
+                        onClick={() => setEditingWordId(null)}
+                        className="px-3 py-1.5 text-xs font-medium text-slate-600 hover:text-slate-800 dark:text-slate-400 dark:hover:text-slate-200 transition"
+                      >
+                        Huỷ
+                      </button>
+                      <button 
+                        onClick={() => {
+                          if (onUpdateWord) {
+                            onUpdateWord(word.id, {
+                              pinyin: editPinyin,
+                              translation: editTranslation,
+                              partOfSpeech: editPartOfSpeech,
+                              hskLevel: editHskLevel
+                            });
+                          }
+                          setEditingWordId(null);
+                        }}
+                        className="px-3 py-1.5 text-xs font-semibold bg-amber-500 hover:bg-amber-600 text-white rounded-lg shadow-sm transition"
+                      >
+                        Lưu lại
+                      </button>
+                    </div>
+                  </motion.div>
+                );
+              }
+
+              return (
+                <motion.div
+                  key={`${word.id}-${index}`}
+                  layout
+                  initial={{ opacity: 0, scale: 0.95 }}
+                  animate={{ opacity: 1, scale: 1 }}
+                  exit={{ opacity: 0, scale: 0.95 }}
+                  transition={{ type: "spring", damping: 20 }}
+                  className={`group relative flex items-center gap-3 cursor-pointer bg-white dark:bg-slate-900 border ${isSelected ? 'border-amber-400 bg-amber-50 dark:bg-amber-900/10' : 'border-slate-200 dark:border-slate-800/80 hover:border-amber-300 dark:hover:border-amber-700/80'} rounded-xl p-3 shadow-sm hover:shadow-md transition-all duration-300 w-full`}
+                  id={`saved-card-${word.id}`}
+                  onClick={(e) => {
+                    e.preventDefault();
+                    if (e.ctrlKey || e.metaKey) {
+                      const newSet = new Set(selectedWordIds);
+                      if (newSet.has(word.id)) {
+                        newSet.delete(word.id);
+                      } else {
+                        newSet.add(word.id);
+                      }
+                      setSelectedWordIds(newSet);
+                    } else {
+                      speakMandarin(word.text);
+                    }
+                  }}
+                  onContextMenu={(e) => {
+                    e.preventDefault();
+                    setContextMenu({
+                      wordId: word.id,
+                      x: e.clientX,
+                      y: e.clientY,
+                      showFolders: false,
+                      folderParentId: null
+                    });
+                  }}
+                >
+                  <div className="w-5 shrink-0 flex items-center justify-center">
+                    <input 
+                      type="checkbox"
+                      checked={isSelected}
+                      onClick={(e) => e.stopPropagation()}
+                      onChange={(e) => {
+                        const newSet = new Set(selectedWordIds);
+                        if (e.target.checked) newSet.add(word.id);
+                        else newSet.delete(word.id);
+                        setSelectedWordIds(newSet);
+                      }}
+                      className="w-4 h-4 rounded border-slate-300 text-amber-500 focus:ring-amber-500 cursor-pointer"
+                    />
+                  </div>
+                  <div className="flex items-center justify-center w-8 h-6 rounded-md bg-slate-100 dark:bg-slate-800 text-slate-500 dark:text-slate-400 text-xs font-medium shrink-0">
+                    {actualIndex + 1}
+                  </div>
+
+                  <div className="flex-1 flex flex-col sm:hidden gap-1">
+                    <span 
+                      className="word-token-element text-xl font-bold text-slate-800 dark:text-slate-100 group-hover:text-amber-600 dark:group-hover:text-amber-400 transition leading-none select-none"
+                      style={{ fontFamily: '"DFKAI-SB", "KaiTi", serif' }}
+                    >
+                      {word.text}
+                    </span>
+                    <span className="text-sm font-medium text-amber-600 dark:text-amber-500">
+                      {word.pinyin !== '?' ? word.pinyin : ''}
+                    </span>
+                    <span className="text-sm text-slate-600 dark:text-slate-300 truncate">
+                      {word.translation || '(Chưa có nghĩa)'}
+                    </span>
+                    <div className="flex gap-2 mt-1">
+                      <span className="text-[10px] font-medium px-2 py-0.5 bg-slate-100 dark:bg-slate-800 text-slate-500 dark:text-slate-400 rounded">
+                        {word.hskLevel || '-'}
+                      </span>
+                      <span className="text-[10px] font-medium px-2 py-0.5 text-slate-500 dark:text-slate-400 truncate">
+                        {word.folderId ? getFolderPath(word.folderId) : '-'}
+                      </span>
+                    </div>
+                  </div>
+
+                  <div className="hidden sm:flex flex-1 items-center gap-2">
+                    {columns.map((col, idx) => {
+                      const showDivider = idx > 0;
+                      return (
+                        <React.Fragment key={`${col.id}-${idx}`}>
+                          {showDivider && <div className="h-4 w-px bg-slate-200 dark:bg-slate-700 shrink-0" />}
+                          <div style={col.flexStyle} className="shrink-0 truncate px-1 flex items-center">
+                            {col.id === 'text' && (
+                              <span 
+                                className="word-token-element text-2xl font-bold text-slate-800 dark:text-slate-100 group-hover:text-amber-600 dark:group-hover:text-amber-400 transition leading-none select-none"
+                                style={{ fontFamily: '"DFKAI-SB", "KaiTi", serif' }}
+                              >
+                                {word.text}
+                              </span>
+                            )}
+                            {col.id === 'pinyin' && (
+                              <span className="text-base font-medium text-amber-600 dark:text-amber-500 truncate">
+                                {word.pinyin !== '?' ? word.pinyin : ''}
+                              </span>
+                            )}
+                            {col.id === 'translation' && (
+                              <span className="text-[15px] text-slate-600 dark:text-slate-300 truncate" title={word.translation}>
+                                {word.translation || '(Chưa có nghĩa)'}
+                              </span>
+                            )}
+                            {col.id === 'hsk' && (
+                              <span className="text-sm font-medium px-2 py-1 bg-slate-100 dark:bg-slate-800 text-slate-500 dark:text-slate-400 rounded-md truncate">
+                                {word.hskLevel || '-'}
+                              </span>
+                            )}
+                            {col.id === 'folder' && (
+                              <span className="text-sm font-medium px-2 py-1 text-slate-500 dark:text-slate-400 truncate" title={word.folderId ? getFolderPath(word.folderId) : ''}>
+                                {word.folderId ? getFolderPath(word.folderId) : '-'}
+                              </span>
+                            )}
+                          </div>
+                        </React.Fragment>
+                      );
+                    })}
+                  </div>
+                  
+                  <div className="flex shrink-0 items-center justify-end pr-2 gap-2">
+                    <button
+                      onClick={(e) => {
+                        e.stopPropagation();
+                        e.preventDefault();
+                        const rect = e.currentTarget.getBoundingClientRect();
+                        setContextMenu({
+                          wordId: word.id,
+                          x: rect.right,
+                          y: rect.bottom,
+                          showFolders: false,
+                          folderParentId: null
+                        });
+                      }}
+                      className="p-1.5 text-slate-400 hover:text-amber-600 dark:hover:text-amber-500 rounded-lg hover:bg-slate-100 dark:hover:bg-slate-800 transition-colors"
+                    >
+                      <MoreVertical className="w-3.5 h-3.5" />
+                    </button>
+
+                    <span className="text-[11px] font-medium text-slate-400 dark:text-slate-500">
+                      {new Date(word.savedAt).toLocaleDateString('vi-VN', { day: '2-digit', month: '2-digit', year: 'numeric' })}
+                    </span>
+                  </div>
+
+
+                </motion.div>
+              );
+              });
+            })()}
+          </AnimatePresence>
+
+          {/* Pagination Controls */}
+          {filteredWords.length > ITEMS_PER_PAGE && (
+            <div className="flex items-center justify-between px-4 py-3 border-t border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900 rounded-b-xl">
+              <div className="text-sm text-slate-500 dark:text-slate-400">
+                Hiển thị <span className="font-medium text-slate-700 dark:text-slate-300">{(currentPage - 1) * ITEMS_PER_PAGE + 1}</span> đến <span className="font-medium text-slate-700 dark:text-slate-300">{Math.min(currentPage * ITEMS_PER_PAGE, filteredWords.length)}</span> trong số <span className="font-medium text-slate-700 dark:text-slate-300">{filteredWords.length}</span> từ
+              </div>
+              <div className="flex items-center gap-1">
+                <button
+                  onClick={() => setCurrentPage(p => Math.max(1, p - 1))}
+                  disabled={currentPage === 1}
+                  className="px-3 py-1.5 text-sm font-medium text-slate-600 dark:text-slate-300 bg-slate-100 dark:bg-slate-800 rounded-lg hover:bg-slate-200 dark:hover:bg-slate-700 disabled:opacity-50 transition-colors"
+                >
+                  Trước
+                </button>
+                <div className="px-3 py-1.5 text-sm font-medium text-slate-700 dark:text-slate-300">
+                  {currentPage} / {Math.ceil(filteredWords.length / ITEMS_PER_PAGE)}
+                </div>
+                <button
+                  onClick={() => setCurrentPage(p => Math.min(Math.ceil(filteredWords.length / ITEMS_PER_PAGE), p + 1))}
+                  disabled={currentPage === Math.ceil(filteredWords.length / ITEMS_PER_PAGE)}
+                  className="px-3 py-1.5 text-sm font-medium text-slate-600 dark:text-slate-300 bg-slate-100 dark:bg-slate-800 rounded-lg hover:bg-slate-200 dark:hover:bg-slate-700 disabled:opacity-50 transition-colors"
+                >
+                  Sau
+                </button>
+              </div>
+            </div>
+          )}
+        </div>
+      ) : null}
+      
+        </div>
+      </div>
+
+      {/* Context Menu */}
+      <AnimatePresence>
+        {contextMenu && (
+          <motion.div
+            initial={{ opacity: 0, scale: 0.95 }}
+            animate={{ opacity: 1, scale: 1 }}
+            exit={{ opacity: 0, scale: 0.95 }}
+            transition={{ duration: 0.1 }}
+            className="fixed z-50 bg-white dark:bg-slate-800 rounded-xl shadow-xl border border-slate-200 dark:border-slate-700 py-1 min-w-[180px] overflow-hidden"
+            style={{ 
+              top: Math.min(contextMenu.y, window.innerHeight - 300), 
+              left: Math.min(contextMenu.x, window.innerWidth - 200) 
+            }}
+            onClick={(e) => e.stopPropagation()}
+            onContextMenu={(e) => e.preventDefault()}
+          >
+            {!contextMenu.showFolders ? (
+              <>
+                <button 
+                  className="w-full text-left px-4 py-2.5 text-sm font-medium text-slate-700 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-slate-700 flex items-center gap-2 transition-colors"
+                  onClick={(e) => {
+                    e.stopPropagation();
+                    const word = savedWords.find(w => w.id === contextMenu.wordId);
+                    if (word) {
+                      setEditPinyin(word.pinyin);
+                      setEditTranslation(word.translation);
+                      setEditPartOfSpeech(word.partOfSpeech || "");
+                      setEditHskLevel(word.hskLevel || "");
+                      setEditingWordId(word.id);
+                    }
+                    setContextMenu(null);
+                  }}
+                >
+                  <Pencil className="w-4 h-4 text-blue-500" /> Sửa từ
+                </button>
+                {onToggleWordStatus && (
+                  <button 
+                    className="w-full text-left px-4 py-2.5 text-sm font-medium text-slate-700 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-slate-700 flex items-center gap-2 transition-colors"
+                    onClick={(e) => {
+                      e.stopPropagation();
+                      const word = savedWords.find(w => w.id === contextMenu.wordId);
+                      if (word) {
+                        onToggleWordStatus(word.id, !word.isKnown);
+                      }
+                      setContextMenu(null);
+                    }}
+                  >
+                    <Check className="w-4 h-4 text-green-500" /> {savedWords.find(w => w.id === contextMenu.wordId)?.isKnown ? "Đánh dấu chưa học" : "Đánh dấu đã biết"}
+                  </button>
+                )}
+                <button 
+                  className="w-full text-left px-4 py-2.5 text-sm font-medium text-slate-700 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-slate-700 flex items-center justify-between transition-colors"
+                  onClick={(e) => {
+                    e.stopPropagation();
+                    setContextMenu({ ...contextMenu, showFolders: true });
+                  }}
+                >
+                  <div className="flex items-center gap-2">
+                    <FolderIcon className="w-4 h-4 text-amber-500" /> Chuyển thư mục
+                  </div>
+                  <ChevronRight className="w-3.5 h-3.5" />
+                </button>
+                <div className="h-px bg-slate-100 dark:bg-slate-700 my-1 mx-2" />
+                <button 
+                  className="w-full text-left px-4 py-2.5 text-sm font-medium text-red-600 hover:bg-red-50 dark:hover:bg-red-900/20 flex items-center gap-2 transition-colors"
+                  onClick={(e) => {
+                    e.stopPropagation();
+                    onRemoveWord(contextMenu.wordId);
+                    setContextMenu(null);
+                  }}
+                >
+                  <X className="w-3.5 h-3.5" /> Xóa khỏi thư viện
+                </button>
+              </>
+            ) : (
+              <div className="max-h-[300px] overflow-y-auto py-1 scrollbar-thin">
+                <div 
+                  className="px-4 py-2 text-xs font-bold text-slate-500 dark:text-slate-400 uppercase flex items-center gap-1.5 cursor-pointer hover:bg-slate-50 dark:hover:bg-slate-700/50 transition-colors border-b border-slate-100 dark:border-slate-700/50 mb-1"
+                  onClick={(e) => {
+                    e.stopPropagation();
+                    if (contextMenu.folderParentId) {
+                      const parentFolder = folders.find(f => f.id === contextMenu.folderParentId);
+                      setContextMenu({ ...contextMenu, folderParentId: parentFolder?.parentId || null });
+                    } else {
+                      setContextMenu({ ...contextMenu, showFolders: false, folderParentId: null });
+                    }
+                  }}
+                >
+                  <ArrowLeft className="w-3.5 h-3.5" /> Quay lại
+                </div>
+                {!contextMenu.folderParentId && (
+                  <button 
+                    className="w-full text-left px-4 py-2.5 text-sm font-medium text-slate-700 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-slate-700 truncate transition-colors"
+                    onClick={(e) => {
+                      e.stopPropagation();
+                      const targetWordIds = selectedWordIds.has(contextMenu.wordId) ? Array.from(selectedWordIds) : [contextMenu.wordId];
+                      onMoveToFolder(targetWordIds, null);
+                      if (selectedWordIds.has(contextMenu.wordId)) setSelectedWordIds(new Set());
+                      setContextMenu(null);
+                    }}
+                  >
+                    Bỏ thư mục (Mặc định)
+                  </button>
+                )}
+                
+                {contextMenu.folderParentId && (
+                  <button 
+                    className="w-full text-left px-4 py-2 text-sm font-semibold text-slate-700 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-slate-700 truncate transition-colors border-b border-slate-100 dark:border-slate-700/50 mb-1"
+                    onClick={(e) => {
+                      e.stopPropagation();
+                      const targetWordIds = selectedWordIds.has(contextMenu.wordId) ? Array.from(selectedWordIds) : [contextMenu.wordId];
+                      onMoveToFolder(targetWordIds, contextMenu.folderParentId);
+                      if (selectedWordIds.has(contextMenu.wordId)) setSelectedWordIds(new Set());
+                      setContextMenu(null);
+                    }}
+                  >
+                    Bỏ vào thư mục này
+                  </button>
+                )}
+
+                {folders.filter(f => f.parentId === contextMenu.folderParentId || (!f.parentId && !contextMenu.folderParentId)).map(f => {
+                   const hasChildren = folders.some(child => child.parentId === f.id);
+                   return (
+                     <div key={f.id} className="flex items-center w-full hover:bg-slate-100 dark:hover:bg-slate-700 transition-colors">
+                       <button
+                         className="flex-1 text-left px-4 py-2 text-sm text-slate-700 dark:text-slate-300 truncate"
+                         onClick={(e) => {
+                           e.stopPropagation();
+                           const targetWordIds = selectedWordIds.has(contextMenu.wordId) ? Array.from(selectedWordIds) : [contextMenu.wordId];
+                           onMoveToFolder(targetWordIds, f.id);
+                           if (selectedWordIds.has(contextMenu.wordId)) setSelectedWordIds(new Set());
+                           setContextMenu(null);
+                         }}
+                         title={f.name}
+                       >
+                         {f.name}
+                       </button>
+                       {hasChildren && (
+                         <button
+                           className="p-2 text-slate-500 hover:text-slate-800 dark:text-slate-400 dark:hover:text-slate-200 shrink-0"
+                           onClick={(e) => {
+                             e.stopPropagation();
+                             setContextMenu({ ...contextMenu, folderParentId: f.id });
+                           }}
+                         >
+                           <ChevronRight className="w-3.5 h-3.5" />
+                         </button>
+                       )}
+                     </div>
+                   );
+                })}
+              </div>
+            )}
+          </motion.div>
+        )}
+      </AnimatePresence>
+      <AnimatePresence>
+        {showFolderModal && (
+          <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-900/50 backdrop-blur-sm">
+            <motion.div
+              initial={{ opacity: 0, scale: 0.95 }}
+              animate={{ opacity: 1, scale: 1 }}
+              exit={{ opacity: 0, scale: 0.95 }}
+              className="bg-white dark:bg-slate-900 rounded-2xl p-5 w-full max-w-sm shadow-xl border border-slate-200 dark:border-slate-800"
+            >
+              <h3 className="text-lg font-bold text-slate-800 dark:text-slate-100 mb-4 flex items-center gap-2">
+                <FolderPlus className="w-5 h-5 text-amber-500" />
+                Thêm thư mục mới
+              </h3>
+              <input 
+                type="text" 
+                value={newFolderName}
+                onChange={(e) => setNewFolderName(e.target.value)}
+                placeholder="Tên thư mục mới..."
+                className="w-full px-3 py-2.5 rounded-xl text-sm bg-slate-50 dark:bg-slate-900 border border-slate-200 dark:border-slate-700 focus:border-amber-500 focus:ring-1 focus:ring-amber-500 outline-none mb-4 text-slate-700 dark:text-slate-200"
+                autoFocus
+                onKeyDown={(e) => {
+                  if (e.key === 'Enter' && newFolderName.trim()) {
+                    onCreateFolder(newFolderName.trim());
+                    setNewFolderName("");
+                    setShowFolderModal(false);
+                  } else if (e.key === 'Escape') {
+                    setShowFolderModal(false);
+                    setNewFolderName("");
+                  }
+                }}
+              />
+              <div className="flex gap-3 justify-end">
+                <button 
+                  onClick={() => {
+                    setShowFolderModal(false);
+                    setNewFolderName("");
+                  }}
+                  className="px-4 py-2 rounded-xl text-sm font-semibold bg-slate-100 hover:bg-slate-200 text-slate-600 dark:bg-slate-800 dark:hover:bg-slate-700 dark:text-slate-300 transition-colors"
+                >
+                  Huỷ
+                </button>
+                <button 
+                  onClick={() => {
+                    if (newFolderName.trim()) {
+                      onCreateFolder(newFolderName.trim());
+                      setNewFolderName("");
+                      setShowFolderModal(false);
+                    }
+                  }}
+                  disabled={!newFolderName.trim()}
+                  className="px-4 py-2 rounded-xl text-sm font-semibold bg-amber-500 hover:bg-amber-600 text-white disabled:opacity-50 transition-colors"
+                >
+                  Tạo mới
+                </button>
+              </div>
+            </motion.div>
+          </div>
+        )}
+      </AnimatePresence>
+      <AnimatePresence>
+        {folderToDelete && (
+          <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-900/50 backdrop-blur-sm">
+            <motion.div
+              initial={{ opacity: 0, scale: 0.95 }}
+              animate={{ opacity: 1, scale: 1 }}
+              exit={{ opacity: 0, scale: 0.95 }}
+              className="bg-white dark:bg-slate-900 rounded-2xl p-5 w-full max-w-sm shadow-xl border border-slate-200 dark:border-slate-800"
+            >
+              <h3 className="text-lg font-bold text-slate-800 dark:text-slate-100 mb-2 flex items-center gap-2">
+                <Trash2 className="w-5 h-5 text-red-500" />
+                Xóa thư mục
+              </h3>
+              <p className="text-sm text-slate-600 dark:text-slate-400 mb-5">
+                Bạn có chắc chắn muốn xóa không? Hành động này không thể hoàn tác và các từ vựng trong thư mục sẽ bị xóa thư mục liên kết.
+              </p>
+              <div className="flex gap-3 justify-end">
+                <button 
+                  onClick={() => setFolderToDelete(null)}
+                  className="px-4 py-2 rounded-xl text-sm font-semibold bg-slate-100 hover:bg-slate-200 text-slate-600 dark:bg-slate-800 dark:hover:bg-slate-700 dark:text-slate-300 transition-colors"
+                >
+                  Huỷ
+                </button>
+                <button 
+                  onClick={() => {
+                    if (folderToDelete) {
+                      onDeleteFolder(folderToDelete);
+                      setFolderToDelete(null);
+                    }
+                  }}
+                  className="px-4 py-2 rounded-xl text-sm font-semibold bg-red-500 hover:bg-red-600 text-white transition-colors"
+                >
+                  Xóa
+                </button>
+              </div>
+            </motion.div>
+          </div>
+        )}
+      </AnimatePresence>
+    </div>
+  );
+}

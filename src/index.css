@@ -1,0 +1,398 @@
+@import "tailwindcss";
+@plugin "@tailwindcss/typography";
+
+.perspective-1000 {
+  perspective: 1000px;
+}
+.perspective-1200 {
+  perspective: 1200px;
+}
+.preserve-3d {
+  transform-style: preserve-3d;
+}
+.backface-hidden {
+  backface-visibility: hidden;
+  -webkit-backface-visibility: hidden;
+}
+
+.custom-scrollbar::-webkit-scrollbar {
+  width: 4px;
+}
+.custom-scrollbar::-webkit-scrollbar-track {
+  background: transparent;
+}
+.custom-scrollbar::-webkit-scrollbar-thumb {
+  background: #cbd5e1;
+  border-radius: 4px;
+}
+.dark .custom-scrollbar::-webkit-scrollbar-thumb {
+  background: #334155;
+}
+
+/* Reading Desk Interactive Word Hover & Shake Animation */
+@keyframes word-shake {
+  0% { transform: translate(0, 0) rotate(0deg); }
+  20% { transform: translate(-1.5px, -0.5px) rotate(-1.2deg); }
+  40% { transform: translate(1.5px, 0.5px) rotate(1.2deg); }
+  60% { transform: translate(-1px, 0.5px) rotate(-0.8deg); }
+  80% { transform: translate(1px, -0.5px) rotate(0.6deg); }
+  100% { transform: translate(0, 0) rotate(0deg); }
+}
+
+#reading-desk .word-token-element {
+  border-radius: 0.5rem;
+  transform-origin: center bottom;
+  transition: background-color 0.2s cubic-bezier(0.4, 0, 0.2, 1), border-color 0.2s cubic-bezier(0.4, 0, 0.2, 1), box-shadow 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+#reading-desk .word-token-element:hover {
+  background-color: rgba(239, 246, 255, 0.85);
+  border-color: rgba(147, 197, 253, 0.85);
+  box-shadow: 0 1px 3px 0 rgba(59, 130, 246, 0.1);
+  animation: word-shake 0.35s ease-in-out;
+}
+
+.dark #reading-desk .word-token-element:hover {
+  background-color: rgba(30, 58, 138, 0.35);
+  border-color: rgba(30, 64, 175, 0.7);
+  box-shadow: 0 1px 3px 0 rgba(0, 0, 0, 0.3);
+}
+
+@media (prefers-reduced-motion: reduce) {
+  #reading-desk .word-token-element:hover {
+    animation: none;
+  }
+}
+
+.audacity-sentence-track::-webkit-scrollbar {
+  display: none !important;
+  height: 0px !important;
+}
+.audacity-sentence-track {
+  -ms-overflow-style: none !important;
+  scrollbar-width: none !important;
+}
+
+/* Audacity Waveform Horizontal Scrollbar - Thanh cuộn màu xám mặc định */
+.audacity-waveform,
+.audacity-waveform [part="scroll"],
+.audacity-waveform::part(scroll),
+.audacity-waveform * {
+  scrollbar-width: thin !important;
+  scrollbar-color: #94a3b8 #f1f5f9 !important;
+}
+
+.audacity-waveform [part="scroll"],
+.audacity-waveform::part(scroll) {
+  overflow-x: scroll !important;
+  overflow-y: hidden !important;
+}
+
+.audacity-waveform ::-webkit-scrollbar,
+.audacity-waveform *::-webkit-scrollbar {
+  height: 12px !important;
+  display: block !important;
+}
+
+.audacity-waveform ::-webkit-scrollbar-track,
+.audacity-waveform *::-webkit-scrollbar-track {
+  background: #f1f5f9 !important;
+  border-top: 1px solid #cbd5e1 !important;
+}
+
+.audacity-waveform ::-webkit-scrollbar-thumb,
+.audacity-waveform *::-webkit-scrollbar-thumb {
+  background: #94a3b8 !important;
+  border-radius: 6px !important;
+  border: 2px solid #f1f5f9 !important;
+  cursor: grab !important;
+}
+
+.audacity-waveform ::-webkit-scrollbar-thumb:hover,
+.audacity-waveform *::-webkit-scrollbar-thumb:hover {
+  background: #64748b !important;
+}
+
+.audacity-waveform ::-webkit-scrollbar-thumb:active,
+.audacity-waveform *::-webkit-scrollbar-thumb:active {
+  background: #475569 !important;
+  cursor: grabbing !important;
+}
+
+.audacity-waveform ::-webkit-scrollbar-button,
+.audacity-waveform *::-webkit-scrollbar-button {
+  display: none !important;
+  width: 0 !important;
+  height: 0 !important;
+}
+
+/* When Audacity Listening Room is maximized, completely hide bottom navigation & tabbar */
+body.audacity-maximized-active {
+  overflow: hidden !important;
+}
+
+body.audacity-maximized-active .fixed.bottom-0,
+body.audacity-maximized-active .pb-safe,
+body.audacity-maximized-active nav {
+  display: none !important;
+  visibility: hidden !important;
+  opacity: 0 !important;
+  pointer-events: none !important;
+}
+
+/* Waveform container & scroll auto-fill available horizontal space */
+.audacity-waveform {
+  width: 100% !important;
+  min-width: 100% !important;
+  display: block !important;
+  position: relative !important;
+  background-color: #ffffff !important;
+  background: #ffffff !important;
+}
+
+.audacity-waveform [part="scroll"],
+.audacity-waveform::part(scroll) {
+  width: 100% !important;
+  min-width: 100% !important;
+  overflow-x: auto !important;
+  overflow-y: hidden !important;
+  scrollbar-width: thin;
+  background-color: #ffffff !important;
+  background: #ffffff !important;
+}
+
+.audacity-waveform [part="wrapper"],
+.audacity-waveform::part(wrapper) {
+  min-width: 100% !important;
+  position: relative !important;
+  display: block !important;
+  background-color: #ffffff !important;
+  background: #ffffff !important;
+}
+
+/* Pre-divided sentence regions on the waveform: Nền trong suốt để lộ màu trắng tinh khiết của sóng âm */
+.audacity-waveform [part~="region"],
+.audacity-waveform::part(region) {
+  height: 100% !important;
+  top: 0 !important;
+  bottom: 0 !important;
+  border-left: 2px solid #3b82f6 !important; /* Cột phân chia vùng rõ ràng cố định bên trái */
+  border-right: none !important;
+  border-top: none !important;
+  border-bottom: none !important;
+  border-radius: 0px !important;
+  cursor: crosshair !important;
+  pointer-events: none !important; /* Cho phép click và kéo chuột xuyên qua vùng để chọn vùng mới */
+  background: transparent !important;
+  backdrop-filter: none !important;
+  box-shadow: none !important;
+  box-sizing: border-box !important;
+  transition: background 0.15s ease, box-shadow 0.15s ease !important;
+}
+
+.audacity-waveform [part~="region"].is-last-sentence-region {
+  border-right: 2px solid #3b82f6 !important;
+}
+
+.audacity-waveform [part~="region"]:hover,
+.audacity-waveform::part(region):hover {
+  background: rgba(59, 130, 246, 0.06) !important;
+}
+
+.audacity-waveform [part~="region"].active-sentence-region {
+  border-left: 2.5px solid #1d4ed8 !important;
+  background: rgba(37, 99, 235, 0.15) !important;
+  box-shadow: inset 0 0 0 1px rgba(29, 78, 216, 0.25) !important;
+  z-index: 10 !important;
+}
+
+.audacity-waveform [part~="region"].active-sentence-region.is-last-sentence-region {
+  border-right: 2.5px solid #1d4ed8 !important;
+}
+
+/* Region Tag / Content (Phần chữ Hán và Pinyin: Mặc định căn giữa ở vùng sóng tương ứng, không co giãn) */
+.audacity-waveform:not([data-overlay-mode="none"]) [part="region-content"]:not(:empty),
+.audacity-waveform:not([data-overlay-mode="none"]) [part~="region-content"]:not(:empty) {
+  position: absolute !important;
+  top: 32px !important;
+  left: 50% !important;
+  transform: translateX(-50%) !important;
+  width: max-content !important;
+  max-width: none !important;
+  margin-top: 0 !important;
+  pointer-events: none !important;
+  font-size: 13px;
+  font-weight: 800;
+  line-height: 1.15;
+  background: transparent !important;
+  backdrop-filter: none !important;
+  padding: 0 4px !important;
+  border: none !important;
+  box-shadow: none !important;
+  user-select: none;
+  text-align: center !important;
+  display: flex !important;
+  flex-direction: row !important;
+  align-items: flex-end !important;
+  justify-content: center !important; /* Mặc định căn giữa ở vùng sóng */
+  box-sizing: border-box !important;
+  white-space: nowrap !important;
+  overflow: visible !important;
+  z-index: 5 !important;
+}
+
+.audacity-waveform [part~="region"].active-sentence-region [part="region-content"],
+.audacity-waveform [part~="region"].active-sentence-region [part~="region-content"],
+.audacity-waveform::part(region-content):hover {
+  background: transparent !important;
+  border: none !important;
+  box-shadow: none !important;
+}
+
+/* Dải câu trên sóng âm: Các cột ký tự căn giữa tự nhiên, không co giãn */
+.audacity-waveform:not([data-overlay-mode="none"]) .region-badge-content {
+  display: flex !important;
+  flex-direction: row !important;
+  align-items: flex-end !important;
+  justify-content: center !important; /* Mặc định căn giữa */
+  width: max-content !important;
+  max-width: none !important;
+  gap: 3px !important; /* Khoảng cách chữ tự nhiên, không co giãn */
+  pointer-events: none !important;
+  white-space: nowrap !important;
+  overflow: visible !important;
+  padding: 0 2px !important;
+  box-sizing: border-box !important;
+  flex-shrink: 0 !important;
+  flex-grow: 0 !important;
+}
+
+/* Mỗi cột ký tự: Pinyin ở trên đầu, Chữ Hán ở dưới - Không co giãn */
+.audacity-waveform:not([data-overlay-mode="none"]) .region-char-col {
+  display: inline-flex !important;
+  flex-direction: column !important;
+  align-items: center !important;
+  justify-content: flex-end !important;
+  line-height: 1.1 !important;
+  flex-grow: 0 !important; /* Không co giãn */
+  flex-shrink: 0 !important;
+  text-align: center !important;
+  padding: 0 1px !important;
+}
+
+/* Pinyin ở trên đầu hán tự - Màu xanh lá cây */
+.audacity-waveform:not([data-overlay-mode="none"]):not([data-overlay-mode="hanzi"]) .region-badge-pinyin {
+  font-weight: 600 !important;
+  font-size: 13.5px !important;
+  line-height: 1.1 !important;
+  letter-spacing: 0.01em !important;
+  color: #16a34a !important; /* Màu xanh lá cây */
+  text-align: center !important;
+  white-space: nowrap !important;
+  display: block !important;
+  margin-bottom: 1.5px !important;
+}
+
+/* Chữ Hán in đậm ở dưới pinyin - Màu xanh lá cây */
+.audacity-waveform:not([data-overlay-mode="none"]):not([data-overlay-mode="pinyin"]) .region-badge-hanzi {
+  font-weight: 800 !important;
+  font-size: 16px !important;
+  line-height: 1.2 !important;
+  letter-spacing: 0.02em !important;
+  color: #16a34a !important; /* Màu xanh lá cây */
+  text-align: center !important;
+  white-space: nowrap !important;
+  display: block !important;
+}
+
+/* Khi vùng đang được chọn (Active) */
+.audacity-waveform [part~="region"].active-sentence-region [part="region-content"],
+.audacity-waveform [part~="region"].active-sentence-region [part~="region-content"] {
+  background: transparent !important;
+  border: none !important;
+  box-shadow: none !important;
+}
+
+.audacity-waveform [part~="region"].active-sentence-region .region-badge-hanzi {
+  color: #16a34a !important; /* Vẫn giữ chữ Hán màu xanh lá cây */
+}
+
+.audacity-waveform [part~="region"].active-sentence-region .region-badge-pinyin {
+  color: #16a34a !important; /* Đổi Pinyin sang màu xanh lá cây */
+}
+
+/* Điều khiển chế độ ẩn/hiện chữ Hán và Pinyin theo data-overlay-mode */
+.audacity-waveform[data-overlay-mode="hanzi"] .region-badge-pinyin {
+  display: none !important;
+}
+
+.audacity-waveform[data-overlay-mode="pinyin"] .region-badge-hanzi {
+  display: none !important;
+}
+
+.audacity-waveform[data-overlay-mode="none"] [part*="region-content"],
+.audacity-waveform[data-overlay-mode="none"]::part(region-content),
+.audacity-waveform[data-overlay-mode="none"] .region-content-wrapper,
+.audacity-waveform[data-overlay-mode="none"] .region-badge-content,
+.audacity-waveform[data-overlay-mode="none"] .region-char-col,
+.audacity-waveform[data-overlay-mode="none"] .region-badge-hanzi,
+.audacity-waveform[data-overlay-mode="none"] .region-badge-pinyin,
+.audacity-waveform [part*="region-content"]:empty,
+.audacity-waveform [part*="region-content"][data-mode="none"] {
+  display: none !important;
+  visibility: hidden !important;
+  opacity: 0 !important;
+  pointer-events: none !important;
+}
+
+/* Đường phân tách ranh giới và thanh kéo co giãn giữa các đoạn sóng âm */
+.audacity-waveform [part~="region-handle-left"],
+.audacity-waveform [part~="region-handle-right"],
+.audacity-waveform [part*="region-handle"],
+.audacity-waveform [part*="handle"],
+.audacity-waveform::part(region-handle),
+.audacity-waveform::part(region-handle-left),
+.audacity-waveform::part(region-handle-right) {
+  width: 8px !important;
+  pointer-events: auto !important;
+  cursor: ew-resize !important;
+  background-color: transparent !important;
+  border: none !important;
+  border-radius: 0px !important;
+  transition: background-color 0.15s ease !important;
+  z-index: 25 !important;
+  opacity: 1 !important;
+}
+
+.audacity-waveform [part~="region-handle-left"]:hover,
+.audacity-waveform [part~="region-handle-right"]:hover,
+.audacity-waveform [part*="region-handle"]:hover,
+.audacity-waveform::part(region-handle-left):hover,
+.audacity-waveform::part(region-handle-right):hover {
+  background-color: rgba(59, 130, 246, 0.35) !important;
+}
+
+.audacity-waveform [part~="region"].active-sentence-region [part~="region-handle-left"],
+.audacity-waveform [part~="region"].active-sentence-region [part~="region-handle-right"] {
+  background-color: transparent !important;
+  width: 8px !important;
+  pointer-events: auto !important;
+  z-index: 26 !important;
+}
+
+/* Smooth spring-like entrance animation for Word Info Popover */
+@keyframes word-popover-enter {
+  0% {
+    opacity: 0;
+    transform: scale(0.95) translateY(4px);
+  }
+  100% {
+    opacity: 1;
+    transform: scale(1) translateY(0);
+  }
+}
+
+.word-popover-enter {
+  animation: word-popover-enter 0.2s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+  will-change: transform, opacity;
+}

@@ -1,0 +1,66 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <script>
+      (function() {
+        function isSuppressedError(err) {
+          if (!err) return false;
+          var msg = (typeof err === 'string') ? err : (err.message || String(err));
+          return (
+            msg.includes('Failed to fetch') ||
+            msg.includes('Cannot set property fetch') ||
+            msg.includes('NetworkError') ||
+            msg.includes('Load failed') ||
+            msg.includes('fetch failed') ||
+            msg.includes('Network request failed') ||
+            msg.includes('AbortError') ||
+            msg.includes('ResizeObserver loop completed with undelivered notifications') ||
+            msg.includes('ResizeObserver loop limit exceeded')
+          );
+        }
+
+        window.addEventListener('error', function(e) {
+          if (isSuppressedError(e.message || (e.error && e.error.message))) {
+            e.preventDefault();
+            e.stopImmediatePropagation();
+            return true;
+          }
+        }, true);
+
+        window.addEventListener('unhandledrejection', function(e) {
+          var reason = e.reason;
+          var msg = reason ? (reason.message || String(reason)) : '';
+          if (isSuppressedError(msg)) {
+            e.preventDefault();
+            e.stopImmediatePropagation();
+            return true;
+          }
+        }, true);
+
+        var originalConsoleError = console.error;
+        console.error = function() {
+          var firstArg = arguments[0];
+          var msg = (typeof firstArg === 'string') ? firstArg : (firstArg && firstArg.message ? firstArg.message : String(firstArg || ''));
+          if (isSuppressedError(msg)) {
+            console.warn.apply(console, arguments);
+            return;
+          }
+          originalConsoleError.apply(console, arguments);
+        };
+      })();
+    </script>
+
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=0" />
+    <title>THẢO MOCHI - Học Tiếng Trung Tương Tác</title>
+    <meta name="description" content="THẢO MOCHI - Ứng dụng học tiếng Trung tương tác, phân tích từ vựng, pinyin, phát âm chuẩn và video người bản xứ." />
+    <meta property="og:title" content="THẢO MOCHI - Học Tiếng Trung Tương Tác" />
+    <meta property="og:description" content="THẢO MOCHI - Ứng dụng học tiếng Trung tương tác, phân tích từ vựng, pinyin, phát âm chuẩn và video người bản xứ." />
+    <script src="https://www.youtube.com/iframe_api"></script>
+  </head>
+  <body>
+    <div id="root"></div>
+    <script type="module" src="/src/main.tsx"></script>
+  </body>
+</html>
+

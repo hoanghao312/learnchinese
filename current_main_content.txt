@@ -1,0 +1,165 @@
+        </div>
+
+      {/* Main Content */}
+      <div className="flex-1 flex flex-col w-full min-w-0 min-h-0 gap-3">
+        {activeFolderId === null ? (
+          <div className="flex flex-col flex-1 min-h-0 bg-white dark:bg-slate-900 rounded-xl border border-slate-200 dark:border-slate-700/50 overflow-hidden">
+            <div className="p-4 border-b border-slate-100 dark:border-slate-800 flex justify-between items-center bg-slate-50 dark:bg-slate-800/50">
+              <h2 className="text-xl font-bold text-slate-800 dark:text-slate-100">Thư viện bài học</h2>
+              <button
+                onClick={() => {
+                  setNewFolderName("");
+                  setShowFolderModal(true);
+                }}
+                className="flex items-center gap-1.5 py-1.5 px-3 bg-blue-500 hover:bg-blue-600 text-white rounded-lg transition-all shadow-sm"
+              >
+                <FolderPlus className="w-4 h-4" />
+                <span className="text-sm font-semibold">Tạo thư mục</span>
+              </button>
+            </div>
+            
+            <div className="p-4 overflow-y-auto custom-scrollbar">
+              {displayedLessons.length === 0 ? (
+                <div className="text-center py-12 bg-slate-50/50 dark:bg-slate-800/30 rounded-3xl border border-slate-100 dark:border-slate-700/50 border-dashed">
+                  <FileText className="w-12 h-12 text-slate-300 dark:text-slate-600 mx-auto mb-3" />
+                  <p className="text-slate-500 dark:text-slate-400">Chưa có bài đọc nào ở đây.</p>
+                </div>
+              ) : (
+                <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3">
+                  {displayedLessons.map(lesson => (
+                    <div 
+                      key={lesson.id}
+                      className="group flex flex-col p-4 bg-white dark:bg-slate-800 border border-slate-100 dark:border-slate-700 rounded-2xl hover:border-blue-200 dark:hover:border-blue-500/50 hover:shadow-sm transition-all cursor-pointer relative"
+                      onClick={() => {
+                        if (editingLessonId !== lesson.id) {
+                          onOpenLesson(lesson);
+                        }
+                      }}
+                    >
+                      <div className="absolute top-4 right-4 flex items-center gap-1 opacity-0 group-hover:opacity-100 transition-all z-10">
+                        {editingLessonId !== lesson.id && (
+                          <button 
+                            onClick={(e) => {
+                              e.stopPropagation();
+                              setEditingLessonId(lesson.id);
+                              setEditTitle(lesson.title);
+                            }}
+                            className="p-1.5 bg-slate-50 dark:bg-slate-700 text-slate-400 hover:text-blue-500 hover:bg-blue-500/10 rounded-lg"
+                            title="Sửa tên bài đọc"
+                          >
+                            <Edit2 className="w-4 h-4" />
+                          </button>
+                        )}
+                        <button 
+                          onClick={(e) => {
+                            e.stopPropagation();
+                            setConfirmAction({
+                              title: "Xóa bài đọc",
+                              message: "Bạn có chắc chắn muốn xóa bài đọc này?",
+                              onConfirm: () => onDeleteLesson(lesson.id)
+                            });
+                          }}
+                          className="p-1.5 bg-slate-50 dark:bg-slate-700 text-slate-400 hover:text-rose-500 hover:bg-rose-500/10 rounded-lg"
+                        >
+                          <X className="w-4 h-4" />
+                        </button>
+                      </div>
+                      <div className="flex items-start gap-3 mb-2 pr-16">
+                        <div className="p-2 bg-rose-50 dark:bg-rose-500/10 text-rose-500 rounded-xl shrink-0">
+                          <FileText className="w-5 h-5" />
+                        </div>
+                        {editingLessonId === lesson.id ? (
+                          <div className="flex items-center gap-1 w-full mt-0.5" onClick={e => e.stopPropagation()}>
+                            <input
+                              autoFocus
+                              type="text"
+                              value={editTitle}
+                              onChange={(e) => setEditTitle(e.target.value)}
+                              onKeyDown={(e) => {
+                                if (e.key === 'Enter' && editTitle.trim()) {
+                                  onEditLessonTitle(lesson.id, editTitle.trim());
+                                  setEditingLessonId(null);
+                                } else if (e.key === 'Escape') {
+                                  setEditingLessonId(null);
+                                }
+                              }}
+                              className="flex-1 w-full text-sm font-bold text-slate-800 dark:text-slate-100 bg-white dark:bg-slate-800 border border-blue-200 dark:border-blue-700 rounded-lg px-2 py-1 outline-none focus:border-blue-500"
+                            />
+                            <button
+                              onClick={() => {
+                                if (editTitle.trim()) {
+                                  onEditLessonTitle(lesson.id, editTitle.trim());
+                                  setEditingLessonId(null);
+                                }
+                              }}
+                              className="p-1.5 bg-blue-500 text-white hover:bg-blue-600 rounded-lg shrink-0"
+                            >
+                              <Check className="w-4 h-4" />
+                            </button>
+                          </div>
+                        ) : (
+                          <h4 className="font-bold text-slate-800 dark:text-slate-200 leading-tight line-clamp-2 mt-0.5">{lesson.title}</h4>
+                        )}
+                      </div>
+                      <div className="flex items-center gap-1.5 text-xs text-slate-400 font-medium">
+                        <Clock className="w-3.5 h-3.5" />
+                        {new Date(lesson.savedAt).toLocaleDateString('vi-VN')}
+                      </div>
+                    </div>
+                  ))}
+                </div>
+              )}
+            </div>
+          </div>
+        ) : (
+          <div className="flex flex-col flex-1 min-h-0 bg-white dark:bg-slate-900 rounded-xl border border-slate-200 dark:border-slate-700/50 overflow-hidden">
+            <div className="p-4 border-b border-slate-100 dark:border-slate-800 flex justify-between items-center bg-slate-50 dark:bg-slate-800/50">
+              <h2 className="text-xl font-bold text-slate-800 dark:text-slate-100 flex items-center gap-2">
+                <FolderIcon className="w-6 h-6 text-blue-500 fill-blue-500/20" />
+                {folders.find(f => f.id === activeFolderId)?.name || 'Thư mục'}
+              </h2>
+            </div>
+            
+            <div className="p-4 overflow-y-auto custom-scrollbar">
+              {displayedLessons.length === 0 ? (
+                <div className="text-center py-12 bg-slate-50/50 dark:bg-slate-800/30 rounded-3xl border border-slate-100 dark:border-slate-700/50 border-dashed">
+                  <FileText className="w-12 h-12 text-slate-300 dark:text-slate-600 mx-auto mb-3" />
+                  <p className="text-slate-500 dark:text-slate-400">Chưa có bài đọc nào ở đây.</p>
+                </div>
+              ) : (
+                <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3">
+                  {displayedLessons.map(lesson => (
+                    <div 
+                      key={lesson.id}
+                      className="group flex flex-col p-4 bg-white dark:bg-slate-800 border border-slate-100 dark:border-slate-700 rounded-2xl hover:border-blue-200 dark:hover:border-blue-500/50 hover:shadow-sm transition-all cursor-pointer relative"
+                      onClick={() => {
+                        if (editingLessonId !== lesson.id) {
+                          onOpenLesson(lesson);
+                        }
+                      }}
+                    >
+                      <div className="absolute top-4 right-4 flex items-center gap-1 opacity-0 group-hover:opacity-100 transition-all z-10">
+                        {editingLessonId !== lesson.id && (
+                          <button 
+                            onClick={(e) => {
+                              e.stopPropagation();
+                              setEditingLessonId(lesson.id);
+                              setEditTitle(lesson.title);
+                            }}
+                            className="p-1.5 bg-slate-50 dark:bg-slate-700 text-slate-400 hover:text-blue-500 hover:bg-blue-500/10 rounded-lg"
+                            title="Sửa tên bài đọc"
+                          >
+                            <Edit2 className="w-4 h-4" />
+                          </button>
+                        )}
+                        <button 
+                          onClick={(e) => {
+                            e.stopPropagation();
+                            setConfirmAction({
+                              title: "Xóa bài đọc",
+                              message: "Bạn có chắc chắn muốn xóa bài đọc này?",
+                              onConfirm: () => onDeleteLesson(lesson.id)
+                            });
+                          }}
+                          className="p-1.5 bg-slate-50 dark:bg-slate-700 text-slate-400 hover:text-rose-500 hover:bg-rose-500/10 rounded-lg"
+                        >
